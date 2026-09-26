@@ -246,6 +246,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
     </div>
     <div>
       <h4>Portal</h4>
+      <p id="footerContact"></p>
       <a href="#" onclick="showToast('Página institucional disponível na versão final.');return false">Sobre</a>
       <a href="#" onclick="showToast('Canal de contato disponível na versão final.');return false">Contato</a>
       <a href="#" onclick="showToast('Área comercial disponível na versão final.');return false">Anuncie</a>
@@ -290,9 +291,9 @@ function renderSiteSettings(){
  document.getElementById('footerDescription').textContent=settings.description||'Informação local, regional e nacional';
  document.getElementById('newsletterDescription').textContent=settings.description||'Receba as principais notícias.';
  const contact=[settings.email,settings.whatsapp,settings.instagram].filter(Boolean).join(' · ');
- document.getElementById('footerContact').textContent=contact;
+ const footerContact=document.getElementById('footerContact');if(footerContact)footerContact.textContent=contact;
  if(settings.logo_url){
-   const logoCss='background-image:url("'+esc(settings.logo_url)+'");background-size:contain;background-repeat:no-repeat;background-position:left center;width:180px;height:42px;display:block';
+   const safeLogoUrl=String(settings.logo_url).replace(/"/g,'\\"');const logoCss='background-image:url("'+safeLogoUrl+'");background-size:contain;background-repeat:no-repeat;background-position:left center;width:180px;height:42px;display:block';
    header.style.cssText=logoCss;header.innerHTML='';
    footer.style.cssText=logoCss+';filter:brightness(0) invert(1)';
    footer.innerHTML='';
@@ -301,7 +302,7 @@ function renderSiteSettings(){
 function renderBanners(){
  document.querySelectorAll('[data-banner-slot]').forEach(el=>{
    const slot=Number(el.dataset.bannerSlot), b=banners.find(x=>Number(x.slot)===slot && x.active && x.image_url);
-   if(b){el.innerHTML='';el.style.backgroundImage='url("'+esc(b.image_url)+'")';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.borderStyle='solid';el.setAttribute('aria-label','Publicidade');}
+   if(b){el.innerHTML='';el.style.backgroundImage='url("'+String(b.image_url).replace(/"/g,'\\"')+'")';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.borderStyle='solid';el.setAttribute('aria-label','Publicidade');}
    else {el.style.backgroundImage='';el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';}
  });
 }
