@@ -131,11 +131,11 @@ td strong{font-size:12px}
   <div class="brand">
     <button class="icon-btn mobile-menu" id="mobileMenu">☰</button>
     <div class="brand-mark">I</div>
-    <div class="brand-title"><strong>INDÉXO CMS</strong><span>Painel administrativo · MVP</span></div>
+    <div class="brand-title"><strong>INDÉXO CMS</strong><span>Painel administrativo</span></div>
   </div>
   <div class="top-actions">
     <button class="ghost-btn" id="previewBtn">◉ Pré-visualizar</button>
-    <div class="user-chip"><div class="avatar">AD</div><div><strong>Administrador</strong><small>acesso local · demonstração</small></div></div>
+    <div class="user-chip"><div class="avatar">AD</div><div><strong>Administrador</strong><small>Supabase conectado</small></div></div>
   </div>
 </header>
 
@@ -154,7 +154,7 @@ td strong{font-size:12px}
     <button data-page="settings"><span class="ico">⚙</span>Configurações</button>
   </nav>
   <div class="system"><strong><span class="dot"></span>Status do sistema</strong><span>Online · Supabase conectado</span></div>
-  <div class="logout"><button id="resetBtn">↻ Restaurar demonstração</button></div>
+  <div class="logout"><button id="resetBtn">↪ Sair do painel</button></div>
 </aside>
 
 <main class="main">
@@ -199,7 +199,7 @@ td strong{font-size:12px}
       <div class="form-actions"><button type="button" class="ghost-btn" onclick="navigate('news')">Cancelar</button><button class="primary-btn" type="submit">Salvar notícia</button></div>
     </form>
     <div>
-      <div class="card"><div class="card-head"><h2>Como funciona</h2></div><div class="card-body" style="color:#aeb4ba;font-size:12px;line-height:1.6">O MVP salva os dados no navegador. Isso permite testar o fluxo de criação e edição sem backend. Na integração real, os mesmos campos poderão alimentar o portal diretamente.</div></div>
+      <div class="card"><div class="card-head"><h2>Como funciona</h2></div><div class="card-body" style="color:#aeb4ba;font-size:12px;line-height:1.6">Os dados são salvos no Supabase e podem alimentar o portal imediatamente. Publicações, imagens e configurações permanecem disponíveis no painel.</div></div>
       <div class="card" style="margin-top:16px"><div class="card-head"><h2>Fluxo validado</h2></div><div class="card-body">
         <div class="quick"><strong>1. Criar</strong><small>Preencher notícia</small></div>
         <div class="quick"><strong>2. Salvar</strong><small>Registrar conteúdo</small></div>
@@ -222,7 +222,7 @@ td strong{font-size:12px}
 </section>
 
 <section class="page" id="page-banners">
-  <div class="page-head"><div><h1>Banners</h1><p>Gerencie os espaços publicitários laterais e posições promocionais.</p></div></div>
+  <div class="page-head"><div><h1>Banners</h1><p>Defina formato, tamanho e como a imagem deve preencher cada espaço.</p></div></div>
   <div class="grid banner-grid" id="bannerGrid"></div>
 </section>
 
@@ -290,8 +290,58 @@ async function uploadNewsImage(){const file=$('fImage').files[0];if(!file)return
 async function renderMedia(){const items=db.media;$('mediaGrid').innerHTML=items.length?items.map(m=>`<div class="media-item"><div class="media-thumb" style="background-image:url('${m.url}')"></div><div class="media-info"><strong>${esc(m.name)}</strong><small>${esc(m.mime_type||'')}</small><div style="margin-top:8px"><button class="danger-btn" style="padding:6px 8px;font-size:9px" onclick="removeMedia('${m.id}')">Excluir</button></div></div></div>`).join(''):`<div class="empty" style="grid-column:1/-1">A biblioteca está vazia.</div>`}
 async function addMediaFiles(files){for(const file of files){try{const url=await uploadFile(file,'media');await sb.from('media').insert({name:file.name,url,mime_type:file.type})}catch(e){showToast(e.message)}}await loadDb();renderMedia();showToast('Mídia sincronizada com o Supabase.')}
 async function removeMedia(id){const m=db.media.find(x=>x.id===id);const r=await sb.from('media').delete().eq('id',id);if(r.error)showToast(r.error.message);else{await loadDb();renderMedia();showToast('Imagem removida.')}}
-function renderBanners(){$('bannerGrid').innerHTML=db.banners.map(b=>\`<div class="banner-card \${b.active?'active':''}"><div class="slot"><span>Banner \${b.slot}</span>\${b.active?'<span class="status published">Ativo</span>':'<span class="status archived">Vazio</span>'}</div><div class="banner-preview" style="\${b.image_url?\`background-image:url('\${b.image_url}')\`:''};height:\${Number(b.height_px)||250}px">\${b.image_url?'':'Clique para adicionar imagem'}</div><div class="banner-meta"><span>\${b.active?'Publicado':'Disponível'}</span><span>\${Number(b.width_px)||970} × \${Number(b.height_px)||250}px</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><div class="field" style="margin:0"><label style="font-size:9px">Largura (px)</label><input id="bannerWidth\${b.id}" type="number" min="100" max="3000" value="\${Number(b.width_px)||970}" style="padding:8px"></div><div class="field" style="margin:0"><label style="font-size:9px">Altura (px)</label><input id="bannerHeight\${b.id}" type="number" min="50" max="1200" value="\${Number(b.height_px)||250}" style="padding:8px"></div></div><div class="banner-actions"><button class="ghost-btn" onclick="bannerUpload('\${b.id}')">\${b.image_url?'Trocar':'Upload'}</button><button class="success-btn" onclick="saveBannerSize('\${b.id}')">Salvar tamanho</button><button class="danger-btn" onclick="removeBanner('\${b.id}')">Remover</button></div><input id="bannerFile\${b.id}" type="file" accept="image/*" hidden></div>\`).join('');db.banners.forEach(b=>{\$('bannerFile'+b.id).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await uploadFile(f,'banners');const r=await sb.from('banners').update({image_url:url,active:true,width_px:b.width_px||970,height_px:b.height_px||250,updated_at:new Date().toISOString()}).eq('id',b.id);if(r.error)throw r.error;await loadDb();renderBanners();renderDashboard();showToast('Banner atualizado.')}catch(err){showToast(err.message)}}})}
-async function saveBannerSize(id){const width=Math.max(100,Math.min(3000,Number($('bannerWidth'+id).value)||970));const height=Math.max(50,Math.min(1200,Number($('bannerHeight'+id).value)||250));const r=await sb.from('banners').update({width_px:width,height_px:height,updated_at:new Date().toISOString()}).eq('id',id);if(r.error){showToast(r.error.message);return}await loadDb();renderBanners();renderDashboard();showToast('Tamanho do banner salvo.')}
+function renderBanners(){
+ const grid=$('bannerGrid');
+ grid.innerHTML=db.banners.map(b=>{
+   const width=Math.max(100,Math.min(3000,Number(b.width_px)||970));
+   const height=Math.max(50,Math.min(1200,Number(b.height_px)||250));
+   const fit=b.image_fit||'cover';
+   const pos=b.image_position||'center';
+   const previewStyle=b.image_url ? 'background-image:url(\''+esc(b.image_url)+'\');background-size:'+fit+';background-position:'+pos+';' : '';
+   return '<div class="banner-card '+(b.active?'active':'')+'">'+
+     '<div class="slot"><span>Banner '+b.slot+'</span>'+(b.active?'<span class="status published">Ativo</span>':'<span class="status archived">Vazio</span>')+'</div>'+
+     '<div class="banner-preview" style="'+previewStyle+'height:'+height+'px">'+(b.image_url?'':'Clique para adicionar imagem')+'</div>'+
+     '<div class="banner-meta"><span>'+(b.active?'Publicado':'Disponível')+'</span><span>'+width+' × '+height+' px</span></div>'+
+     '<div class="field" style="margin:12px 0 10px"><label style="font-size:9px">Layout</label><select id="bannerPreset'+b.id+'" onchange="applyBannerPreset(\''+b.id+'\',this.value)" style="padding:8px"><option value="custom">Personalizado</option><option value="wide">Horizontal 970 × 90</option><option value="billboard">Horizontal 970 × 250</option><option value="side">Lateral 300 × 250</option><option value="square">Quadrado 300 × 300</option></select></div>'+
+     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+       '<div class="field" style="margin:0"><label style="font-size:9px">Largura (px)</label><input id="bannerWidth'+b.id+'" type="number" min="100" max="3000" value="'+width+'" style="padding:8px"></div>'+
+       '<div class="field" style="margin:0"><label style="font-size:9px">Altura (px)</label><input id="bannerHeight'+b.id+'" type="number" min="50" max="1200" value="'+height+'" style="padding:8px"></div>'+
+     '</div>'+
+     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">'+
+       '<div class="field" style="margin:0"><label style="font-size:9px">Ajuste da imagem</label><select id="bannerFit'+b.id+'" style="padding:8px"><option value="cover" '+(fit==='cover'?'selected':'')+'>Preencher</option><option value="contain" '+(fit==='contain'?'selected':'')+'>Encaixar sem cortar</option><option value="fill" '+(fit==='fill'?'selected':'')+'>Esticar</option></select></div>'+
+       '<div class="field" style="margin:0"><label style="font-size:9px">Posição</label><select id="bannerPosition'+b.id+'" style="padding:8px"><option value="center" '+(pos==='center'?'selected':'')+'>Centro</option><option value="top" '+(pos==='top'?'selected':'')+'>Topo</option><option value="bottom" '+(pos==='bottom'?'selected':'')+'>Base</option><option value="left" '+(pos==='left'?'selected':'')+'>Esquerda</option><option value="right" '+(pos==='right'?'selected':'')+'>Direita</option></select></div>'+
+     '</div>'+
+     '<div class="banner-actions"><button class="ghost-btn" onclick="bannerUpload(\''+b.id+'\')">'+(b.image_url?'Trocar imagem':'Upload')+'</button><button class="success-btn" onclick="saveBannerLayout(\''+b.id+'\')">Salvar ajustes</button><button class="danger-btn" onclick="removeBanner(\''+b.id+'\')">Remover</button></div>'+
+     '<input id="bannerFile'+b.id+'" type="file" accept="image/*" hidden></div>';
+ }).join('');
+ db.banners.forEach(b=>{
+   const file=$('bannerFile'+b.id);
+   if(!file)return;
+   file.onchange=async e=>{
+     const f=e.target.files[0];if(!f)return;
+     try{
+       const url=await uploadFile(f,'banners');
+       const r=await sb.from('banners').update({image_url:url,active:true,width_px:Number($('bannerWidth'+b.id).value)||b.width_px||970,height_px:Number($('bannerHeight'+b.id).value)||b.height_px||250,image_fit:$('bannerFit'+b.id).value,image_position:$('bannerPosition'+b.id).value,updated_at:new Date().toISOString()}).eq('id',b.id);
+       if(r.error)throw r.error;
+       await loadDb();renderBanners();renderDashboard();showToast('Banner atualizado.');
+     }catch(err){showToast(err.message)}
+   };
+ });
+}
+function applyBannerPreset(id,preset){
+ const presets={wide:[970,90],billboard:[970,250],side:[300,250],square:[300,300]};
+ if(!presets[preset])return;
+ $('bannerWidth'+id).value=presets[preset][0];$('bannerHeight'+id).value=presets[preset][1];
+}
+async function saveBannerLayout(id){
+ const width=Math.max(100,Math.min(3000,Number($('bannerWidth'+id).value)||970));
+ const height=Math.max(50,Math.min(1200,Number($('bannerHeight'+id).value)||250));
+ const fit=$('bannerFit'+id).value;
+ const position=$('bannerPosition'+id).value;
+ const r=await sb.from('banners').update({width_px:width,height_px:height,image_fit:fit,image_position:position,updated_at:new Date().toISOString()}).eq('id',id);
+ if(r.error){showToast(r.error.message);return}
+ await loadDb();renderBanners();renderDashboard();showToast('Ajustes do banner salvos.');
+}
 function bannerUpload(id){$('bannerFile'+id).click()}
 async function removeBanner(id){const r=await sb.from('banners').update({image_url:'',active:false,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)showToast(r.error.message);else{await loadDb();renderBanners();renderDashboard();showToast('Espaço liberado.')}}
 function renderSettings(){const s=db.settings||{};$('sName').value=s.name||'';$('sDescription').value=s.description||'';$('sLogo').value=s.logo_url||'';$('sEmail').value=s.email||'';$('sWhats').value=s.whatsapp||'';$('sInstagram').value=s.instagram||''}
