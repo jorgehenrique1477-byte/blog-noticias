@@ -47,10 +47,10 @@ a{color:inherit}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:24px}
 .hero{border:1px solid var(--line);overflow:hidden;cursor:pointer;background:#fff}
 .media{position:relative;overflow:hidden;background:linear-gradient(135deg,#202a33,#8d9aa5)}
-.media::before{content:"";position:absolute;inset:0;background:
+.media::before{pointer-events:none;content:"";position:absolute;inset:0;background:
  radial-gradient(circle at 70% 25%,rgba(255,255,255,.22),transparent 25%),
  linear-gradient(125deg,transparent 45%,rgba(255,255,255,.12) 46%,transparent 60%)}
-.media::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.34),transparent 55%)}
+.media::after{pointer-events:none;content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.34),transparent 55%)}
 .media.has-photo{background-size:cover;background-position:center}
 .media.has-photo::before{background:linear-gradient(to top,rgba(0,0,0,.18),transparent 58%)}
 .media.has-photo::after{background:linear-gradient(to top,rgba(0,0,0,.28),transparent 55%)}
@@ -67,7 +67,7 @@ a{color:inherit}
 .media.m7{background:linear-gradient(135deg,#4a3d32,#c8b39a)}
 .media.m8{background:linear-gradient(135deg,#273b4e,#9db1c0)}
 .media.m9{background:linear-gradient(135deg,#3e4540,#b6bdac)}
-.media .tag{position:absolute;left:14px;top:14px;z-index:2;background:#fff;color:#111;padding:6px 8px;font-size:9px;font-weight:900;letter-spacing:.7px}
+.media .tag{pointer-events:none;position:absolute;left:14px;top:14px;z-index:2;background:#fff;color:#111;padding:6px 8px;font-size:9px;font-weight:900;letter-spacing:.7px}
 .hero-copy{padding:20px}
 .kicker{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
 .hero h1{font-size:31px;line-height:1.08;margin:7px 0 10px;letter-spacing:-.6px}
@@ -284,7 +284,18 @@ function renderHome(){if(!news.length){heroArea.innerHTML='<div class="empty">Ne
 function renderList(items){newsList.innerHTML=items.map(n=>card(n)).join('');noResults.style.display=items.length?'none':'block';bindCards()}
 async function openArticle(id){const n=news.find(x=>x.id===id);if(!n)return;sb.rpc('increment_news_views',{p_id:id}).catch(()=>{});modalContent.innerHTML=`<div class="media has-photo ${n.media}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><span class="kicker">${esc(n.cat)}</span><h2>${esc(n.title)}</h2><small class="meta">${esc(n.time)} · Redação</small><small class="source-note">Fonte: ${esc(n.source)}</small><p>${esc(n.excerpt)}</p>${n.content?`<div>${n.content.replace(/\n/g,'<br>')}</div>`:'<p>Conteúdo completo da publicação.</p>'}`;modal.classList.add('open');document.body.style.overflow='hidden'}
 function closeModal(){modal.classList.remove('open');document.body.style.overflow=''}
-function bindCards(){document.querySelectorAll('[data-id]').forEach(el=>{el.onclick=()=>openArticle(el.dataset.id);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openArticle(el.dataset.id)}}})}
+function bindCards(){
+ document.querySelectorAll('[data-id]').forEach(el=>{
+   el.setAttribute('role','button');
+   el.setAttribute('tabindex','0');
+   el.onclick=()=>openArticle(el.dataset.id);
+   el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openArticle(el.dataset.id)}}
+ })
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-id]');
+ if(el && !e.target.closest('button,a,input')) openArticle(el.dataset.id);
+});
 function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.category===cat));const items=cat==='Todas'?news:news.filter(n=>n.cat===cat);renderList(items);document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
