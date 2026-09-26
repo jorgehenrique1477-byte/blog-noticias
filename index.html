@@ -302,8 +302,25 @@ function renderSiteSettings(){
 function renderBanners(){
  document.querySelectorAll('[data-banner-slot]').forEach(el=>{
    const slot=Number(el.dataset.bannerSlot), b=banners.find(x=>Number(x.slot)===slot && x.active && x.image_url);
-   if(b){el.innerHTML='';el.style.backgroundImage='url("'+String(b.image_url).replace(/"/g,'\\"')+'")';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.borderStyle='solid';el.setAttribute('aria-label','Publicidade');}
-   else {el.style.backgroundImage='';el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';}
+   if(b){
+     el.innerHTML='';
+     const height=Math.max(50,Math.min(1200,Number(b.height_px)|| (slot===1||slot===2?90:slot===3||slot===4?250:250)));
+     el.style.height=height+'px';
+     el.style.backgroundImage='url("'+String(b.image_url).replace(/"/g,'\\"')+'")';
+     el.style.backgroundSize='contain';
+     el.style.backgroundRepeat='no-repeat';
+     el.style.backgroundPosition='center';
+     el.style.backgroundColor='#f6f7f8';
+     el.style.borderStyle='solid';
+     el.setAttribute('aria-label','Publicidade');
+   } else {
+     el.style.backgroundImage='';
+     el.style.backgroundSize='';
+     el.style.backgroundRepeat='';
+     el.style.backgroundPosition='';
+     el.style.height='';
+     el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';
+   }
  });
 }
 function renderCategories(){
@@ -330,8 +347,30 @@ document.addEventListener('click',e=>{
 function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.category===cat));const items=cat==='Todas'?news:news.filter(n=>n.cat===cat);renderList(items);document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
-async function load(){const [c,n,s,b]=await Promise.all([sb.from('categories').select('*').order('name'),sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),sb.from('site_settings').select('*').eq('id',1).maybeSingle(),sb.from('banners').select('*').eq('active',true).order('slot')]);if(c.error||n.error||s.error||b.error)throw(c.error||n.error||s.error||b.error);categories=c.data||[];news=(n.data||[]).map(mapNews);settings=s.data||settings;banners=b.data||[];renderCategories();renderSiteSettings();renderBanners();renderHome()}
-document.getElementById('today').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});document.getElementById('menuBtn').onclick=()=>document.getElementById('nav').classList.toggle('open');document.getElementById('searchBtn').onclick=()=>{const p=document.getElementById('searchPanel');p.classList.toggle('open');if(p.classList.contains('open'))document.getElementById('searchInput').focus()};document.getElementById('searchInput').oninput=e=>doSearch(e.target.value,false);document.getElementById('searchInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch(e.target.value,true)}};document.getElementById('clearSearch').onclick=()=>{document.getElementById('searchInput').value='';renderHome();document.getElementById('searchPanel').classList.remove('open')};document.querySelectorAll('.nav a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category)});document.getElementById('showAll')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Todas')});document.querySelector('[data-category-link]')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Esportes')});document.getElementById('closeModal').onclick=closeModal;modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});document.getElementById('newsletterForm').onsubmit=e=>{e.preventDefault();showToast('Cadastro realizado.');e.target.reset()};load().catch(e=>{console.error(e);showToast('Não foi possível carregar o conteúdo.')});
+async function load(render=true){
+ const [c,n,s,b]=await Promise.all([
+   sb.from('categories').select('*').order('name'),
+   sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),
+   sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
+   sb.from('banners').select('*').eq('active',true).order('slot')
+ ]);
+ if(c.error||n.error||s.error||b.error)throw(c.error||n.error||s.error||b.error);
+ categories=c.data||[];
+ news=(n.data||[]).map(mapNews);
+ settings=s.data||settings;
+ banners=b.data||[];
+ if(render){renderCategories();renderSiteSettings();renderBanners();renderHome();}
+}
+function subscribeRealtime(){
+ const channel=sb.channel('portal-live-updates')
+   .on('postgres_changes',{event:'*',schema:'public',table:'news'},()=>load().catch(console.error))
+   .on('postgres_changes',{event:'*',schema:'public',table:'categories'},()=>load().catch(console.error))
+   .on('postgres_changes',{event:'*',schema:'public',table:'banners'},()=>load().catch(console.error))
+   .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>load().catch(console.error))
+   .subscribe((status,err)=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.error('Realtime:',status,err)});
+}
+
+document.getElementById('today').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});document.getElementById('menuBtn').onclick=()=>document.getElementById('nav').classList.toggle('open');document.getElementById('searchBtn').onclick=()=>{const p=document.getElementById('searchPanel');p.classList.toggle('open');if(p.classList.contains('open'))document.getElementById('searchInput').focus()};document.getElementById('searchInput').oninput=e=>doSearch(e.target.value,false);document.getElementById('searchInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch(e.target.value,true)}};document.getElementById('clearSearch').onclick=()=>{document.getElementById('searchInput').value='';renderHome();document.getElementById('searchPanel').classList.remove('open')};document.querySelectorAll('.nav a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category)});document.getElementById('showAll')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Todas')});document.querySelector('[data-category-link]')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Esportes')});document.getElementById('closeModal').onclick=closeModal;modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});document.getElementById('newsletterForm').onsubmit=e=>{e.preventDefault();showToast('Cadastro realizado.');e.target.reset()};load().then(()=>subscribeRealtime()).catch(e=>{console.error(e);showToast('Não foi possível carregar o conteúdo.')});
 </script>
 </body>
 </html>
