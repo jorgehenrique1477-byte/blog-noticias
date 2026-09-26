@@ -276,6 +276,7 @@ const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let news=[];let categories=[];let banners=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
 const heroArea=document.getElementById('heroArea'),newsList=document.getElementById('newsList'),sports=document.getElementById('sports'),mostRead=document.getElementById('mostRead'),noResults=document.getElementById('noResults'),modal=document.getElementById('modal'),modalContent=document.getElementById('modalContent'),toast=document.getElementById('toast');
+let articleOpen=false;
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function catName(n){return n.category_name||categories.find(c=>c.id===n.category_id)?.name||'Geral'}
 function mapNews(n){return {...n,cat:catName(n),time:(n.published_at||n.created_at||'').slice(0,10).split('-').reverse().join('/'),media:'m1',hero:!!n.featured,source:n.source||'Redação',image:n.image_url||''}}
@@ -334,19 +335,22 @@ function renderCategories(){
 }
 function renderHome(){if(!news.length){heroArea.innerHTML='<div class="empty">Nenhuma notícia publicada ainda.</div>';newsList.innerHTML='';sports.innerHTML='';mostRead.innerHTML='';return}const hero=news.find(n=>n.featured)||news[0],side=news.filter(n=>n.id!==hero.id).slice(0,2);heroArea.innerHTML=`<article class="hero" data-id="${hero.id}" tabindex="0" role="button"><div class="media large has-photo ${hero.media}" style="background-image:url('${esc(hero.image)}')"><span class="tag">DESTAQUE</span></div><div class="hero-copy"><span class="kicker">${esc(hero.cat)}</span><h1>${esc(hero.title)}</h1><p class="excerpt">${esc(hero.excerpt)}</p><small class="meta">${esc(hero.time)} · Redação</small><small class="source-note">Fonte: ${esc(hero.source)}</small></div></article><div class="side-stories">${side.map(n=>card(n,'story')).join('')}</div>`;renderList(news.filter(n=>n.id!==hero.id).slice(0,8));sports.innerHTML=news.filter(n=>n.cat==='Esportes').slice(0,3).map(n=>card(n,'grid')).join('');mostRead.innerHTML=[...news].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5).map((n,i)=>`<li data-id="${n.id}" tabindex="0"><b>${String(i+1).padStart(2,'0')}</b><span>${esc(n.title)}</span></li>`).join('');bindCards()}
 function renderList(items){newsList.innerHTML=items.map(n=>card(n)).join('');noResults.style.display=items.length?'none':'block';bindCards()}
-async function openArticle(id){const n=news.find(x=>x.id===id);if(!n)return;sb.rpc('increment_news_views',{p_id:id}).catch(()=>{});modalContent.innerHTML=`<div class="media has-photo ${n.media}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><span class="kicker">${esc(n.cat)}</span><h2>${esc(n.title)}</h2><small class="meta">${esc(n.time)} · Redação</small><small class="source-note">Fonte: ${esc(n.source)}</small><p>${esc(n.excerpt)}</p>${n.content?`<div>${n.content.replace(/\n/g,'<br>')}</div>`:'<p>Conteúdo completo da publicação.</p>'}`;modal.classList.add('open');document.body.style.overflow='hidden'}
-function closeModal(){modal.classList.remove('open');document.body.style.overflow=''}
+async function openArticle(id){const n=news.find(x=>x.id===id);if(!n)return;articleOpen=true;modalContent.innerHTML=`<div class="media has-photo ${n.media}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><span class="kicker">${esc(n.cat)}</span><h2>${esc(n.title)}</h2><small class="meta">${esc(n.time)} · Redação</small><small class="source-note">Fonte: ${esc(n.source)}</small><p>${esc(n.excerpt)}</p>${n.content?`<div>${n.content.replace(/\n/g,'<br>')}</div>`:'<p>Conteúdo completo da publicação.</p>'}`;modal.classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(){articleOpen=false;modal.classList.remove('open');document.body.style.overflow='';renderHome()}
 function bindCards(){
  document.querySelectorAll('[data-id]').forEach(el=>{
    el.setAttribute('role','button');
    el.setAttribute('tabindex','0');
-   el.onclick=()=>openArticle(el.dataset.id);
-   el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openArticle(el.dataset.id)}}
- })
+   el.style.cursor='pointer';
+   el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openArticle(el.dataset.id)}};
+ });
 }
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-id]');
- if(el && !e.target.closest('button,a,input')) openArticle(el.dataset.id);
+ if(!el || e.target.closest('button,a,input,select,textarea')) return;
+ e.preventDefault();
+ e.stopPropagation();
+ openArticle(el.dataset.id);
 });
 function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.category===cat));const items=cat==='Todas'?news:news.filter(n=>n.cat===cat);renderList(items);document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
@@ -366,11 +370,12 @@ async function load(render=true){
  if(render){renderCategories();renderSiteSettings();renderBanners();renderHome();}
 }
 function subscribeRealtime(){
+ const refresh=()=>load(!articleOpen).catch(console.error);
  const channel=sb.channel('portal-live-updates')
-   .on('postgres_changes',{event:'*',schema:'public',table:'news'},()=>load().catch(console.error))
-   .on('postgres_changes',{event:'*',schema:'public',table:'categories'},()=>load().catch(console.error))
-   .on('postgres_changes',{event:'*',schema:'public',table:'banners'},()=>load().catch(console.error))
-   .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>load().catch(console.error))
+   .on('postgres_changes',{event:'*',schema:'public',table:'news'},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'categories'},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'banners'},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},refresh)
    .subscribe((status,err)=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.error('Realtime:',status,err)});
 }
 
