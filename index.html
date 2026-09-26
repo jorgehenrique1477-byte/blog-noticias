@@ -151,13 +151,13 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 <div class="topbar">
   <div class="container topbar-inner">
     <span id="today"></span>
-    <span>Informação local, regional e nacional</span>
+    <span id="topbarInfo">Informação local, regional e nacional</span>
   </div>
 </div>
 
 <header class="header">
   <div class="container header-main">
-    <a class="logo" href="#" onclick="goHome(event)"><strong>AGORA</strong><span>NOTÍCIAS</span></a>
+    <a class="logo" id="headerLogo" href="#" onclick="goHome(event)"><strong>AGORA</strong><span>NOTÍCIAS</span></a>
     <div class="header-actions">
       <button class="icon-btn" id="searchBtn" type="button">Pesquisar</button>
       <button class="icon-btn menu-btn" id="menuBtn" type="button">☰</button>
@@ -190,7 +190,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
     <strong>Demonstração comercial:</strong> usamos notícias reais e fotografias reais apenas para criar uma percepção mais próxima de um portal publicado. No projeto final, textos, créditos e imagens serão definidos e autorizados pelo cliente.
   </div>
 
-  <div class="ad ad-top">ESPAÇO PUBLICITÁRIO · 970 × 90</div>
+  <div class="ad ad-top" data-banner-slot="1">ESPAÇO PUBLICITÁRIO · 970 × 90</div>
 
   <section class="breaking">
     <span class="breaking-label">ÚLTIMA HORA</span>
@@ -199,7 +199,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 
   <section class="hero-grid" id="heroArea"></section>
 
-  <div class="ad ad-top">ESPAÇO PUBLICITÁRIO · 728 × 90</div>
+  <div class="ad ad-top" data-banner-slot="2">ESPAÇO PUBLICITÁRIO · 728 × 90</div>
 
   <div class="content-grid">
     <section>
@@ -209,12 +209,12 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
     </section>
 
     <aside>
-      <div class="ad ad-side">ANÚNCIO<br><small>300 × 250</small></div>
+      <div class="ad ad-side" data-banner-slot="3">ANÚNCIO<br><small>300 × 250</small></div>
       <div class="side-box">
         <div class="section-heading"><h2>Mais lidas</h2></div>
         <ol class="most-read" id="mostRead"></ol>
       </div>
-      <div class="ad ad-side" style="margin-top:20px">ANÚNCIO<br><small>300 × 250</small></div>
+      <div class="ad ad-side" data-banner-slot="4" style="margin-top:20px">ANÚNCIO<br><small>300 × 250</small></div>
     </aside>
   </div>
 
@@ -223,13 +223,13 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
     <div class="cards-3" id="sports"></div>
   </section>
 
-  <div class="ad ad-wide">ESPAÇO PUBLICITÁRIO · 970 × 250</div>
+  <div class="ad ad-wide" data-banner-slot="5">ESPAÇO PUBLICITÁRIO · 970 × 250</div>
 
   <section class="newsletter">
     <div>
       <span class="eyebrow">FIQUE INFORMADO</span>
       <h2>Receba as principais notícias.</h2>
-      <p>Estrutura preparada para newsletter e futuras notificações.</p>
+      <p id="newsletterDescription">Estrutura preparada para newsletter e futuras notificações.</p>
     </div>
     <form id="newsletterForm">
       <input type="email" placeholder="Seu melhor e-mail" required>
@@ -242,7 +242,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
   <div class="container footer-grid">
     <div>
       <a class="logo footer-logo" href="#" onclick="goHome(event)"><strong>AGORA</strong><span>NOTÍCIAS</span></a>
-      <p>Informação local, regional e nacional.</p>
+      <p id="footerDescription">Informação local, regional e nacional.</p>
     </div>
     <div>
       <h4>Portal</h4>
@@ -273,13 +273,43 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 const SUPABASE_URL="https://gbsqwfpohvepaylcwcbl.supabase.co";
 const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let news=[];let categories=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
+let news=[];let categories=[];let banners=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
 const heroArea=document.getElementById('heroArea'),newsList=document.getElementById('newsList'),sports=document.getElementById('sports'),mostRead=document.getElementById('mostRead'),noResults=document.getElementById('noResults'),modal=document.getElementById('modal'),modalContent=document.getElementById('modalContent'),toast=document.getElementById('toast');
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function catName(n){return n.category_name||categories.find(c=>c.id===n.category_id)?.name||'Geral'}
 function mapNews(n){return {...n,cat:catName(n),time:(n.published_at||n.created_at||'').slice(0,10).split('-').reverse().join('/'),media:'m1',hero:!!n.featured,source:n.source||'Redação',image:n.image_url||''}}
 function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>toast.classList.remove('show'),2600)}
 function card(n,type='news'){const cls=type==='story'?'story-card':type==='grid'?'grid-card':'news-item';const heading=type==='hero'?'h1':type==='story'?'h2':'h3';return `<article class="${cls}" data-id="${n.id}" tabindex="0" role="button"><div class="media has-photo ${n.media} ${type==='hero'?'large':''}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><div><span class="kicker">${esc(n.cat)}</span><${heading}>${esc(n.title)}</${heading}>${type!=='grid'?`<p class="excerpt">${esc(n.excerpt)}</p>`:''}<small class="meta">${esc(n.time)} · Redação</small>${type==='grid'?`<small class="source-note">Fonte: ${esc(n.source)}</small>`:''}</div></article>`}
+function renderSiteSettings(){
+ const name=settings.name||'Agora Notícias';
+ const parts=name.trim().split(/\s+/);
+ document.title=name;
+ const header=document.getElementById('headerLogo'),footer=document.getElementById('footerLogo');
+ [header,footer].forEach((logo,i)=>{if(!logo)return;logo.innerHTML='<strong>'+esc(parts[0]||'AGORA')+'</strong><span>'+esc(parts.slice(1).join(' ')||'NOTÍCIAS').toUpperCase()+'</span>';});
+ document.getElementById('topbarInfo').textContent=settings.description||'Informação local, regional e nacional';
+ document.getElementById('footerDescription').textContent=settings.description||'Informação local, regional e nacional';
+ document.getElementById('newsletterDescription').textContent=settings.description||'Receba as principais notícias.';
+ const contact=[settings.email,settings.whatsapp,settings.instagram].filter(Boolean).join(' · ');
+ document.getElementById('footerContact').textContent=contact;
+ if(settings.logo_url){
+   const logoCss='background-image:url("'+esc(settings.logo_url)+'");background-size:contain;background-repeat:no-repeat;background-position:left center;width:180px;height:42px;display:block';
+   header.style.cssText=logoCss;header.innerHTML='';
+   footer.style.cssText=logoCss+';filter:brightness(0) invert(1)';
+   footer.innerHTML='';
+ }
+}
+function renderBanners(){
+ document.querySelectorAll('[data-banner-slot]').forEach(el=>{
+   const slot=Number(el.dataset.bannerSlot), b=banners.find(x=>Number(x.slot)===slot && x.active && x.image_url);
+   if(b){el.innerHTML='';el.style.backgroundImage='url("'+esc(b.image_url)+'")';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.borderStyle='solid';el.setAttribute('aria-label','Publicidade');}
+   else {el.style.backgroundImage='';el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';}
+ });
+}
+function renderCategories(){
+ const nav=document.querySelector('.nav-inner');
+ nav.innerHTML='<a href="#" data-category="Todas" class="active">Início</a>'+categories.map(c=>'<a href="#" data-category="'+esc(c.name)+'">'+esc(c.name)+'</a>').join('');
+ nav.querySelectorAll('a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category);if(window.innerWidth<=820)document.getElementById('nav').classList.remove('open')});
+}
 function renderHome(){if(!news.length){heroArea.innerHTML='<div class="empty">Nenhuma notícia publicada ainda.</div>';newsList.innerHTML='';sports.innerHTML='';mostRead.innerHTML='';return}const hero=news.find(n=>n.featured)||news[0],side=news.filter(n=>n.id!==hero.id).slice(0,2);heroArea.innerHTML=`<article class="hero" data-id="${hero.id}" tabindex="0" role="button"><div class="media large has-photo ${hero.media}" style="background-image:url('${esc(hero.image)}')"><span class="tag">DESTAQUE</span></div><div class="hero-copy"><span class="kicker">${esc(hero.cat)}</span><h1>${esc(hero.title)}</h1><p class="excerpt">${esc(hero.excerpt)}</p><small class="meta">${esc(hero.time)} · Redação</small><small class="source-note">Fonte: ${esc(hero.source)}</small></div></article><div class="side-stories">${side.map(n=>card(n,'story')).join('')}</div>`;renderList(news.filter(n=>n.id!==hero.id).slice(0,8));sports.innerHTML=news.filter(n=>n.cat==='Esportes').slice(0,3).map(n=>card(n,'grid')).join('');mostRead.innerHTML=[...news].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5).map((n,i)=>`<li data-id="${n.id}" tabindex="0"><b>${String(i+1).padStart(2,'0')}</b><span>${esc(n.title)}</span></li>`).join('');bindCards()}
 function renderList(items){newsList.innerHTML=items.map(n=>card(n)).join('');noResults.style.display=items.length?'none':'block';bindCards()}
 async function openArticle(id){const n=news.find(x=>x.id===id);if(!n)return;sb.rpc('increment_news_views',{p_id:id}).catch(()=>{});modalContent.innerHTML=`<div class="media has-photo ${n.media}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><span class="kicker">${esc(n.cat)}</span><h2>${esc(n.title)}</h2><small class="meta">${esc(n.time)} · Redação</small><small class="source-note">Fonte: ${esc(n.source)}</small><p>${esc(n.excerpt)}</p>${n.content?`<div>${n.content.replace(/\n/g,'<br>')}</div>`:'<p>Conteúdo completo da publicação.</p>'}`;modal.classList.add('open');document.body.style.overflow='hidden'}
@@ -299,7 +329,7 @@ document.addEventListener('click',e=>{
 function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.category===cat));const items=cat==='Todas'?news:news.filter(n=>n.cat===cat);renderList(items);document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
-async function load(){const [c,n,s]=await Promise.all([sb.from('categories').select('*').order('name'),sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),sb.from('site_settings').select('*').eq('id',1).maybeSingle()]);if(c.error||n.error||s.error)throw(c.error||n.error||s.error);categories=c.data||[];news=(n.data||[]).map(mapNews);settings=s.data||settings;document.title=settings.name||'Agora Notícias';document.querySelector('.footer-logo strong').textContent=(settings.name||'Agora Notícias').split(' ')[0];document.querySelector('.footer-logo span').textContent=(settings.name||'Agora Notícias').split(' ').slice(1).join(' ').toUpperCase()||'NOTÍCIAS';document.querySelector('.newsletter p').textContent=settings.description||'Informação local, regional e nacional.';renderHome()}
+async function load(){const [c,n,s,b]=await Promise.all([sb.from('categories').select('*').order('name'),sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),sb.from('site_settings').select('*').eq('id',1).maybeSingle(),sb.from('banners').select('*').eq('active',true).order('slot')]);if(c.error||n.error||s.error||b.error)throw(c.error||n.error||s.error||b.error);categories=c.data||[];news=(n.data||[]).map(mapNews);settings=s.data||settings;banners=b.data||[];renderCategories();renderSiteSettings();renderBanners();renderHome()}
 document.getElementById('today').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});document.getElementById('menuBtn').onclick=()=>document.getElementById('nav').classList.toggle('open');document.getElementById('searchBtn').onclick=()=>{const p=document.getElementById('searchPanel');p.classList.toggle('open');if(p.classList.contains('open'))document.getElementById('searchInput').focus()};document.getElementById('searchInput').oninput=e=>doSearch(e.target.value,false);document.getElementById('searchInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch(e.target.value,true)}};document.getElementById('clearSearch').onclick=()=>{document.getElementById('searchInput').value='';renderHome();document.getElementById('searchPanel').classList.remove('open')};document.querySelectorAll('.nav a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category)});document.getElementById('showAll')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Todas')});document.querySelector('[data-category-link]')?.addEventListener('click',e=>{e.preventDefault();filterCategory('Esportes')});document.getElementById('closeModal').onclick=closeModal;modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});document.getElementById('newsletterForm').onsubmit=e=>{e.preventDefault();showToast('Cadastro realizado.');e.target.reset()};load().catch(e=>{console.error(e);showToast('Não foi possível carregar o conteúdo.')});
 </script>
 </body>
