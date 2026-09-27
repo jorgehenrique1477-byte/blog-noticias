@@ -123,6 +123,24 @@ td strong{font-size:12px}
 @media(max-width:820px){.layout{grid-template-columns:1fr}.sidebar{position:fixed;z-index:60;top:76px;left:0;bottom:0;height:auto;width:280px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}.main{padding:20px}.topbar{padding:0 16px}.mobile-menu{display:block!important}.two{grid-template-columns:1fr}.category-list{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.stats,.banner-grid,.media-grid,.settings-grid,.category-list{grid-template-columns:1fr}.page-head{display:block}.actions{margin-top:15px}.field-row{grid-template-columns:1fr}.brand-title span{display:none}.user-chip{display:none}}
 .mobile-menu{display:none}
+.layout-builder{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}
+.layout-list{display:flex;flex-direction:column;gap:9px}
+.layout-item{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:10px;background:#202326;border:1px solid #34383c;border-radius:9px;padding:10px}
+.layout-item .handle{color:#7f878e;font-size:16px;text-align:center}
+.layout-item strong{display:block;font-size:12px}.layout-item small{display:block;color:#8e959b;font-size:9px;margin-top:3px}
+.layout-item .move-actions{display:flex;gap:5px}.layout-item .move-actions button{padding:6px 8px;font-size:10px}
+.layout-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.layout-controls .field{margin:0}
+.toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle{display:flex;align-items:center;gap:8px;background:#202326;border:1px solid #34383c;border-radius:8px;padding:9px;font-size:10px}
+.toggle input{accent-color:var(--accent)}
+.banner-upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.banner-upload-slot{display:block;border:1px dashed #555b60;border-radius:8px;background:#202326;color:#dce0e3;padding:9px;text-align:center;font-size:10px;font-weight:800;cursor:pointer}
+.banner-upload-slot:hover{background:#292d31;border-color:#777f86}
+.banner-upload-slot input{display:none}
+.banner-upload-slot small{display:block;color:#8e959b;font-weight:600;margin-top:3px}
+@media(max-width:900px){.layout-builder{grid-template-columns:1fr}}
+@media(max-width:600px){.toggle-grid,.layout-controls{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -150,6 +168,7 @@ td strong{font-size:12px}
     <button data-page="categories"><span class="ico">▥</span>Categorias</button>
     <button data-page="media"><span class="ico">▧</span>Mídia</button>
     <button data-page="banners"><span class="ico">▦</span>Banners</button>
+    <button data-page="layout"><span class="ico">☷</span>Layout do portal</button>
     <button data-page="users"><span class="ico">♙</span>Usuários</button>
     <button data-page="settings"><span class="ico">⚙</span>Configurações</button>
   </nav>
@@ -226,6 +245,47 @@ td strong{font-size:12px}
   <div class="grid banner-grid" id="bannerGrid"></div>
 </section>
 
+<section class="page" id="page-layout">
+  <div class="page-head"><div><h1>Layout do portal</h1><p>Organize a posição dos blocos, defina o que aparece e ajuste a estrutura visual do portal sem editar código.</p></div><div class="actions"><button class="primary-btn" onclick="savePortalLayout()">Salvar layout</button><button class="ghost-btn" onclick="resetPortalLayout()">Restaurar padrão</button></div></div>
+  <div class="layout-builder">
+    <div class="form-card">
+      <h2>Ordem dos componentes</h2>
+      <p style="color:#8e959b;font-size:11px;line-height:1.5;margin-top:-7px">Use ↑ e ↓ para decidir onde cada bloco aparece na página inicial.</p>
+      <div id="layoutList" class="layout-list"></div>
+    </div>
+    <div>
+      <div class="form-card">
+        <h2>Estrutura</h2>
+        <div class="layout-controls">
+          <div class="field"><label>Largura máxima do portal (px)</label><input id="lMax" type="number" min="800" max="1800"></div>
+          <div class="field"><label>Espaçamento entre blocos (px)</label><input id="lGap" type="number" min="0" max="80"></div>
+          <div class="field"><label>Altura do destaque (px)</label><input id="lHero" type="number" min="180" max="700"></div>
+          <div class="field"><label>Colunas do destaque</label><select id="lHeroCols"><option value="1.55fr 1fr">Principal + lateral</option><option value="1fr">Uma coluna</option><option value="1.25fr 1fr">Equilibrado</option><option value="2fr 1fr">Principal amplo</option></select></div>
+          <div class="field" style="grid-column:1/-1"><label>Colunas de notícias + lateral</label><select id="lContentCols"><option value="1fr 310px">Conteúdo + lateral</option><option value="1fr">Uma coluna</option><option value="1.3fr 280px">Conteúdo amplo</option><option value="1fr 360px">Lateral ampla</option></select></div>
+        </div>
+      </div>
+      <div class="form-card" style="margin-top:16px">
+        <h2>Componentes visíveis</h2>
+        <div class="toggle-grid">
+          <label class="toggle"><input id="showDemo" type="checkbox"> Aviso de demonstração</label>
+          <label class="toggle"><input id="showTopAd" type="checkbox"> Banner superior</label>
+          <label class="toggle"><input id="showBreaking" type="checkbox"> Última hora</label>
+          <label class="toggle"><input id="showHero" type="checkbox"> Destaque principal</label>
+          <label class="toggle"><input id="showSecondAd" type="checkbox"> Segundo banner</label>
+          <label class="toggle"><input id="showLatest" type="checkbox"> Últimas notícias</label>
+          <label class="toggle"><input id="showMostRead" type="checkbox"> Mais lidas / lateral</label>
+          <label class="toggle"><input id="showSports" type="checkbox"> Esportes</label>
+          <label class="toggle"><input id="showWideAd" type="checkbox"> Banner amplo</label>
+          <label class="toggle"><input id="showNewsletter" type="checkbox"> Newsletter</label>
+          <label class="toggle"><input id="showFooter" type="checkbox"> Rodapé</label>
+          <label class="toggle"><input id="showNav" type="checkbox"> Menu de categorias</label>
+          <label class="toggle"><input id="showTopbar" type="checkbox"> Barra superior</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="page" id="page-users">
   <div class="page-head"><div><h1>Usuários</h1><p>Estrutura inicial para permissões administrativas.</p></div><button class="primary-btn" onclick="showToast('Use a autenticação do Supabase para controlar o acesso ao painel.')">+ Novo usuário</button></div>
   <div class="card"><div class="table-wrap"><table><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Status</th></tr></thead><tbody><tr><td><strong>Administrador</strong></td><td>admin@indexo.local</td><td>Administrador</td><td><span class="status published">Ativo</span></td></tr></tbody></table></div></div>
@@ -275,7 +335,8 @@ async function loadDb(){
   sb.from('banners').select('*').order('slot'),
   sb.from('banner_ads').select('*').order('sort_order'),
   sb.from('media').select('*').order('created_at',{ascending:false}),
-  sb.from('site_settings').select('*').eq('id',1).maybeSingle()
+  sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
+  sb.from('site_layout').select('*').eq('id',1).maybeSingle()
  ]);
  for(const r of [c,n,b,a,m,s]) if(r.error) throw r.error;
  db.categories=c.data||[];
@@ -284,8 +345,9 @@ async function loadDb(){
  db.bannerAds=a.data||[];
  db.media=m.data||[];
  db.settings=s.data||{name:'Agora Notícias'};
+ db.layout=s.data?.config||{mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
 }
-function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.side-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('page-'+page).classList.add('active');if(page==='dashboard')renderDashboard();if(page==='news')renderNewsTable();if(page==='new-news'){populateCategories();if(!editingId)resetForm()}if(page==='categories')renderCategories();if(page==='media')renderMedia();if(page==='banners')renderBanners();if(page==='settings')renderSettings();$('sidebar').classList.remove('open')}
+function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.side-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('page-'+page).classList.add('active');if(page==='dashboard')renderDashboard();if(page==='news')renderNewsTable();if(page==='new-news'){populateCategories();if(!editingId)resetForm()}if(page==='categories')renderCategories();if(page==='media')renderMedia();if(page==='banners')renderBanners();if(page==='layout')renderPortalLayout();if(page==='settings')renderSettings();$('sidebar').classList.remove('open')}
 function openNewNews(){editingId=null;navigate('new-news')}
 function renderDashboard(){const pub=db.news.filter(n=>n.status==='published').length,drafts=db.news.filter(n=>n.status==='draft').length,feat=db.news.filter(n=>n.featured).length,activeB=db.banners.filter(b=>b.active).length;$('stats').innerHTML=[["Notícias publicadas",pub,"Disponíveis no portal"],["Rascunhos",drafts,"Aguardando publicação"],["Em destaque",feat,"Marcadas como principal"],["Banners ativos",activeB,`${db.banners.length-activeB} espaços livres`]].map(x=>`<div class="stat"><div class="label">${x[0]}</div><div class="value">${x[1]}</div><div class="hint">${x[2]}</div></div>`).join('');const rows=[...db.news].sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))).slice(0,6);$('dashboardNews').innerHTML=rows.map(n=>`<tr><td><strong>${esc(n.title)}</strong></td><td>${esc(n.category_name||db.categories.find(c=>c.id===n.category_id)?.name||'—')}</td><td>${statusHtml(n.status)}</td><td>${fmtDate(n.published_at||n.created_at)}</td></tr>`).join('')}
 function renderNewsTable(){const term=($('newsSearch')?.value||'').toLowerCase().trim();const rows=db.news.filter(n=>[n.title,n.excerpt,n.source].join(' ').toLowerCase().includes(term)).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));$('newsTable').innerHTML=rows.length?rows.map(n=>`<tr><td><strong>${esc(n.title)}</strong></td><td>${esc(n.category_name||db.categories.find(c=>c.id===n.category_id)?.name||'—')}</td><td>${statusHtml(n.status)}</td><td>${fmtDate(n.published_at||n.created_at)}</td><td><div class="row-actions"><button class="ghost-btn" onclick="editNews('${n.id}')">Editar</button><button class="danger-btn" onclick="deleteNews('${n.id}')">Excluir</button></div></td></tr>`).join(''):`<tr><td colspan="5"><div class="empty">Nenhuma notícia encontrada.</div></td></tr>`}
@@ -329,7 +391,7 @@ function renderBanners(){
      '<div class="banner-preview" style="height:'+height+'px;'+(b.image_url?'background-image:url(\''+esc(b.image_url)+'\');background-size:'+fit+';background-position:'+pos+';':'')+'">'+(b.image_url?'':'Clique para adicionar mídia')+'</div>'+
      '<div class="banner-meta"><span>'+(b.active?'Publicado':'Disponível')+'</span><span>'+width+' × '+height+' px</span></div>'+
      '<div style="margin-top:12px"><label style="font-size:9px;display:block;margin-bottom:6px">Anúncios deste espaço · até 3</label><div style="display:grid;gap:7px">'+(previews||'<small style="color:#8f969d">Nenhum anúncio cadastrado.</small>')+'</div></div>'+
-     '<div style="display:flex;gap:7px;margin-top:9px">'+[0,1,2].map(n=>'<button class="ghost-btn" onclick="bannerAdUpload(\''+b.id+'\','+n+')">+ Anúncio '+(n+1)+'</button>').join('')+'</div>'+
+     '<div class="banner-upload-grid" style="margin-top:9px">'+[0,1,2].map(n=>'<label class="banner-upload-slot" for="bannerAdFile'+b.id+'_'+n+'">+ Anúncio '+(n+1)+'<small>Imagem ou vídeo</small></label>').join('')+'</div>'+
      '<div class="field" style="margin:12px 0 10px"><label style="font-size:9px">Layout do espaço</label><select id="bannerPreset'+b.id+'" onchange="applyBannerPreset(\''+b.id+'\',this.value)" style="padding:8px"><option value="custom">Personalizado</option><option value="wide">Horizontal 970 × 90</option><option value="billboard">Horizontal 970 × 250</option><option value="side">Lateral 300 × 250</option><option value="square">Quadrado 300 × 300</option></select></div>'+
      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="field" style="margin:0"><label style="font-size:9px">Largura (px)</label><input id="bannerWidth'+b.id+'" type="number" min="100" max="3000" value="'+width+'" style="padding:8px"></div><div class="field" style="margin:0"><label style="font-size:9px">Altura (px)</label><input id="bannerHeight'+b.id+'" type="number" min="50" max="1200" value="'+height+'" style="padding:8px"></div></div>'+
      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><div class="field" style="margin:0"><label style="font-size:9px">Ajuste</label><select id="bannerFit'+b.id+'" style="padding:8px"><option value="cover" '+(fit==='cover'?'selected':'')+'>Preencher</option><option value="contain" '+(fit==='contain'?'selected':'')+'>Encaixar sem cortar</option><option value="fill" '+(fit==='fill'?'selected':'')+'>Esticar</option></select></div><div class="field" style="margin:0"><label style="font-size:9px">Posição</label><select id="bannerPosition'+b.id+'" style="padding:8px"><option value="center" '+(pos==='center'?'selected':'')+'>Centro</option><option value="top" '+(pos==='top'?'selected':'')+'>Topo</option><option value="bottom" '+(pos==='bottom'?'selected':'')+'>Base</option><option value="left" '+(pos==='left'?'selected':'')+'>Esquerda</option><option value="right" '+(pos==='right'?'selected':'')+'>Direita</option></select></div></div>'+
@@ -344,6 +406,9 @@ function renderBanners(){
 }
 async function uploadBannerAd(bannerId,order,file){
  try{
+  if(!file){showToast('Selecione um arquivo.');return}
+  if(!file.type.startsWith('image/')&&!file.type.startsWith('video/')){showToast('Use uma imagem ou vídeo.');return}
+  showToast('Enviando anúncio...');
   const existing=db.bannerAds.filter(a=>a.banner_id===bannerId&&a.active).sort((x,y)=>Number(x.sort_order)-Number(y.sort_order));
   if(existing.length>=3 && !existing.some(a=>Number(a.sort_order)===Number(order))){showToast('Este banner já possui 3 anúncios.');return}
   const url=await uploadFile(file,'banners');
@@ -385,6 +450,41 @@ async function removeBanner(id){
  const r=await sb.from('banners').update({image_url:'',active:false,updated_at:new Date().toISOString()}).eq('id',id);
  if(r.error)showToast(r.error.message);else{await loadDb();renderBanners();renderDashboard();showToast('Espaço liberado.')}
 }
+
+const DEFAULT_LAYOUT={mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
+const LAYOUT_LABELS={demo:'Aviso de demonstração',ad1:'Banner superior',breaking:'Última hora',hero:'Destaque principal',ad2:'Segundo banner',content:'Últimas notícias + lateral',sports:'Bloco de esportes',wideAd:'Banner amplo',newsletter:'Newsletter'};
+function renderPortalLayout(){
+ const l={...DEFAULT_LAYOUT,...(db.layout||{})};
+ $('lMax').value=l.mainMaxWidth;$('lGap').value=l.mainGap;$('lHero').value=l.heroHeight;$('lHeroCols').value=l.heroColumns;$('lContentCols').value=l.contentColumns;
+ const vis={Demo:!!l.showDemoNote,TopAd:!!l.showTopAd,Breaking:!!l.showBreaking,Hero:!!l.showHero,SecondAd:!!l.showSecondAd,Latest:!!l.showLatest,MostRead:!!l.showMostRead,Sports:!!l.showSports,WideAd:!!l.showWideAd,Newsletter:!!l.showNewsletter,Footer:!!l.showFooter,Nav:!!l.showNav,Topbar:!!l.showTopbar};
+ Object.keys(vis).forEach(k=>{if($('show'+k))$('show'+k).checked=vis[k]});
+ const order=[...(l.componentOrder||DEFAULT_LAYOUT.componentOrder)];
+ $('layoutList').innerHTML=order.map((id,i)=>'<div class="layout-item" data-layout-id="'+id+'"><div class="handle">☷</div><div><strong>'+esc(LAYOUT_LABELS[id]||id)+'</strong><small>Posição '+(i+1)+'</small></div><div class="move-actions"><button class="ghost-btn" onclick="moveLayout(\''+id+'\',-1)">↑</button><button class="ghost-btn" onclick="moveLayout(\''+id+'\',1)">↓</button></div></div>').join('');
+}
+function collectPortalLayout(){
+ const l={...DEFAULT_LAYOUT,...(db.layout||{})};
+ l.mainMaxWidth=Math.max(800,Math.min(1800,Number($('lMax').value)||1180));
+ l.mainGap=Math.max(0,Math.min(80,Number($('lGap').value)||24));
+ l.heroHeight=Math.max(180,Math.min(700,Number($('lHero').value)||350));
+ l.heroColumns=$('lHeroCols').value;l.contentColumns=$('lContentCols').value;
+ l.showDemoNote=$('showDemo').checked;l.showTopAd=$('showTopAd').checked;l.showBreaking=$('showBreaking').checked;l.showHero=$('showHero').checked;l.showSecondAd=$('showSecondAd').checked;l.showLatest=$('showLatest').checked;l.showMostRead=$('showMostRead').checked;l.showSports=$('showSports').checked;l.showWideAd=$('showWideAd').checked;l.showNewsletter=$('showNewsletter').checked;l.showFooter=$('showFooter').checked;l.showNav=$('showNav').checked;l.showTopbar=$('showTopbar').checked;
+ l.componentOrder=[...document.querySelectorAll('#layoutList .layout-item')].map(el=>el.dataset.layoutId);
+ return l;
+}
+function moveLayout(id,dir){
+ const l=collectPortalLayout(),i=l.componentOrder.indexOf(id),j=i+dir;
+ if(i<0||j<0||j>=l.componentOrder.length)return;
+ [l.componentOrder[i],l.componentOrder[j]]=[l.componentOrder[j],l.componentOrder[i]];
+ db.layout=l;renderPortalLayout();
+}
+async function savePortalLayout(){
+ const config=collectPortalLayout();
+ const r=await sb.from('site_layout').upsert({id:1,config,updated_at:new Date().toISOString()});
+ if(r.error){showToast(r.error.message);return}
+ db.layout=config;showToast('Layout do portal salvo.');
+}
+function resetPortalLayout(){db.layout={...DEFAULT_LAYOUT,componentOrder:[...DEFAULT_LAYOUT.componentOrder]};renderPortalLayout();showToast('Padrão carregado. Clique em Salvar layout para aplicar.')}
+
 function renderSettings(){const s=db.settings||{};$('sName').value=s.name||'';$('sDescription').value=s.description||'';$('sLogo').value=s.logo_url||'';$('sEmail').value=s.email||'';$('sWhats').value=s.whatsapp||'';$('sInstagram').value=s.instagram||''}
 async function saveSettings(){const payload={name:$('sName').value,description:$('sDescription').value,logo_url:$('sLogo').value,email:$('sEmail').value,whatsapp:$('sWhats').value,instagram:$('sInstagram').value,updated_at:new Date().toISOString()};const r=await sb.from('site_settings').upsert({id:1,...payload});if(r.error)showToast(r.error.message);else{await loadDb();showToast('Configurações salvas no Supabase.')}}
 async function signOut(){await sb.auth.signOut();location.reload()}
