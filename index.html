@@ -44,6 +44,7 @@ a{color:inherit}
 .ad-top{height:90px;margin:22px 0}
 .ad-side{min-height:250px;margin:0 0 20px}
 .ad-wide{height:180px;margin:36px 0}
+.portal-layout{display:flex;flex-direction:column;gap:var(--layout-gap,0)}
 .breaking{display:flex;border:1px solid var(--line);margin:22px 0;min-height:43px;align-items:center}
 .breaking-label{background:var(--accent);color:#fff;font-size:10px;font-weight:900;letter-spacing:.6px;padding:14px 15px}
 .breaking-text{padding:0 14px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -151,14 +152,14 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 </head>
 <body>
 
-<div class="topbar">
+<div class="topbar" id="siteTopbar">
   <div class="container topbar-inner">
     <span id="today"></span>
     <span id="topbarInfo">Informação local, regional e nacional</span>
   </div>
 </div>
 
-<header class="header">
+<header class="header" id="siteHeader">
   <div class="container header-main">
     <a class="logo" id="headerLogo" href="#" onclick="goHome(event)"><strong>AGORA</strong><span>NOTÍCIAS</span></a>
     <div class="header-actions">
@@ -188,30 +189,30 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
   </div>
 </header>
 
-<main class="container">
-  <div class="demo-note">
+<main class="container portal-layout" id="portalMain">
+  <div class="demo-note" id="layout-demo">
     <strong>Demonstração comercial:</strong> usamos notícias reais e fotografias reais apenas para criar uma percepção mais próxima de um portal publicado. No projeto final, textos, créditos e imagens serão definidos e autorizados pelo cliente.
   </div>
 
-  <div class="ad ad-top" data-banner-slot="1">ESPAÇO PUBLICITÁRIO · 970 × 90</div>
+  <div class="ad ad-top" id="layout-ad1" data-banner-slot="1">ESPAÇO PUBLICITÁRIO · 970 × 90</div>
 
-  <section class="breaking">
+  <section class="breaking" id="layout-breaking">
     <span class="breaking-label">ÚLTIMA HORA</span>
     <p class="breaking-text">Portal preparado para destacar informações importantes e atualizações em tempo real.</p>
   </section>
 
-  <section class="hero-grid" id="heroArea"></section>
+  <section class="hero-grid" id="layout-hero"><div id="heroArea" style="display:contents"></div></section></section>
 
-  <div class="ad ad-top" data-banner-slot="2">ESPAÇO PUBLICITÁRIO · 728 × 90</div>
+  <div class="ad ad-top" id="layout-ad2" data-banner-slot="2">ESPAÇO PUBLICITÁRIO · 728 × 90</div>
 
-  <div class="content-grid">
-    <section>
+  <div class="content-grid" id="layout-content">
+    <section id="latestContent">
       <div class="section-heading"><h2>Últimas notícias</h2><a href="#" id="showAll">Ver todas →</a></div>
       <div class="news-list" id="newsList"></div>
       <div class="no-results" id="noResults">Nenhuma notícia encontrada para esta busca.</div>
     </section>
 
-    <aside>
+    <aside id="mostReadAside">
       <div class="ad ad-side" data-banner-slot="3">ANÚNCIO<br><small>300 × 250</small></div>
       <div class="side-box">
         <div class="section-heading"><h2>Mais lidas</h2></div>
@@ -221,14 +222,14 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
     </aside>
   </div>
 
-  <section>
+  <section id="layout-sports">
     <div class="section-heading"><h2>Esportes</h2><a href="#" data-category-link="Esportes">Mais notícias →</a></div>
     <div class="cards-3" id="sports"></div>
   </section>
 
-  <div class="ad ad-wide" data-banner-slot="5">ESPAÇO PUBLICITÁRIO · 970 × 250</div>
+  <div class="ad ad-wide" id="layout-wide-ad" data-banner-slot="5">ESPAÇO PUBLICITÁRIO · 970 × 250</div>
 
-  <section class="newsletter">
+  <section class="newsletter" id="layout-newsletter">
     <div>
       <span class="eyebrow">FIQUE INFORMADO</span>
       <h2>Receba as principais notícias.</h2>
@@ -241,7 +242,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
   </section>
 </main>
 
-<footer>
+<footer id="siteFooter">
   <div class="container footer-grid">
     <div>
       <a class="logo footer-logo" href="#" onclick="goHome(event)"><strong>AGORA</strong><span>NOTÍCIAS</span></a>
@@ -277,7 +278,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 const SUPABASE_URL="https://gbsqwfpohvepaylcwcbl.supabase.co";
 const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let news=[];let categories=[];let banners=[];let bannerAds=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
+let news=[];let categories=[];let banners=[];let bannerAds=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};let portalLayout={};
 const heroArea=document.getElementById('heroArea'),newsList=document.getElementById('newsList'),sports=document.getElementById('sports'),mostRead=document.getElementById('mostRead'),noResults=document.getElementById('noResults'),modal=document.getElementById('modal'),modalContent=document.getElementById('modalContent'),toast=document.getElementById('toast');
 let articleOpen=false;
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -293,6 +294,24 @@ function renderCategories(){
  nav.innerHTML=unique.map(cat=>`<a href="#" data-category="${esc(cat)}" class="${cat==='Todas'?'active':''}">${esc(cat)}</a>`).join('');
  nav.querySelectorAll('a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category)});
 }
+const DEFAULT_PORTAL_LAYOUT={mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
+function applyPortalLayout(){
+ const l={...DEFAULT_PORTAL_LAYOUT,...(portalLayout||{})};
+ const main=document.getElementById('portalMain');
+ if(main){main.style.setProperty('--layout-gap',Math.max(0,Number(l.mainGap)||0)+'px');main.style.maxWidth=Math.max(800,Math.min(1800,Number(l.mainMaxWidth)||1180))+'px';}
+ const orderMap={demo:'layout-demo',ad1:'layout-ad1',breaking:'layout-breaking',hero:'layout-hero',ad2:'layout-ad2',content:'layout-content',sports:'layout-sports',wideAd:'layout-wide-ad',newsletter:'layout-newsletter'};
+ Object.entries(orderMap).forEach(([key,id],i)=>{const el=document.getElementById(id);if(el)el.style.order=(l.componentOrder||DEFAULT_PORTAL_LAYOUT.componentOrder).indexOf(key)>=0?(l.componentOrder||DEFAULT_PORTAL_LAYOUT.componentOrder).indexOf(key)+1:i+1});
+ const show={ 'layout-demo':l.showDemoNote,'layout-ad1':l.showTopAd,'layout-breaking':l.showBreaking,'layout-hero':l.showHero,'layout-ad2':l.showSecondAd,'layout-content':l.showLatest||l.showMostRead,'layout-sports':l.showSports,'layout-wide-ad':l.showWideAd,'layout-newsletter':l.showNewsletter };
+ Object.entries(show).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.style.display=v?'':'none'});
+ const latest=document.getElementById('latestContent'),aside=document.getElementById('mostReadAside');if(latest)latest.style.display=l.showLatest?'':'none';if(aside)aside.style.display=l.showMostRead?'':'none';
+ const footer=document.getElementById('siteFooter');if(footer)footer.style.display=l.showFooter?'':'none';
+ const nav=document.getElementById('nav');if(nav)nav.style.display=l.showNav?'':'none';
+ const topbar=document.getElementById('siteTopbar');if(topbar)topbar.style.display=l.showTopbar?'':'none';
+ const hero=document.getElementById('heroArea');if(hero)hero.parentElement.style.gridTemplateColumns=l.heroColumns;
+ const content=document.getElementById('layout-content');if(content)content.style.gridTemplateColumns=l.contentColumns;
+ document.querySelectorAll('.media.large').forEach(el=>el.style.height=Math.max(180,Math.min(700,Number(l.heroHeight)||350))+'px');
+}
+
 function renderSiteSettings(){
  const name=settings.name||'Agora Notícias';
  const parts=name.trim().split(/\s+/);
@@ -434,21 +453,23 @@ function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.cl
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 async function load(render=true){
- const [c,n,s,b,a]=await Promise.all([
+ const [c,n,s,b,a,l]=await Promise.all([
    sb.from('categories').select('*').order('name'),
    sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),
    sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
    sb.from('banners').select('*').eq('active',true).order('slot'),
-   sb.from('banner_ads').select('*').eq('active',true).order('sort_order')
+   sb.from('banner_ads').select('*').eq('active',true).order('sort_order'),
+   sb.from('site_layout').select('*').eq('id',1).maybeSingle()
  ]);
- const errors=[c,n,s,b,a].filter(x=>x.error);
+ const errors=[c,n,s,b,a,l].filter(x=>x.error);
  if(errors.length) console.warn('Falha parcial ao carregar o portal:',errors.map(x=>x.error));
  categories=c.data||[];
  news=(n.data||[]).map(mapNews);
  settings=s.data||settings;
  banners=b.data||[];
  bannerAds=a.data||[];
- if(render){renderCategories();renderSiteSettings();renderBanners();renderHome();}
+ portalLayout=l.data?.config||portalLayout||DEFAULT_PORTAL_LAYOUT;
+ if(render){renderCategories();renderSiteSettings();applyPortalLayout();renderBanners();renderHome();}
 }
 function subscribeRealtime(){
  const refresh=()=>load(!articleOpen).catch(console.error);
@@ -458,6 +479,7 @@ function subscribeRealtime(){
    .on('postgres_changes',{event:'*',schema:'public',table:'banners'},refresh)
    .on('postgres_changes',{event:'*',schema:'public',table:'banner_ads'},refresh)
    .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'site_layout'},refresh)
    .subscribe((status,err)=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.error('Realtime:',status,err)});
 }
 
