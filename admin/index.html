@@ -122,6 +122,17 @@ td strong{font-size:12px}
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.banner-grid{grid-template-columns:repeat(2,1fr)}.media-grid{grid-template-columns:repeat(3,1fr)}.form-layout{grid-template-columns:1fr}}
 @media(max-width:820px){.layout{grid-template-columns:1fr}.sidebar{position:fixed;z-index:60;top:76px;left:0;bottom:0;height:auto;width:280px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}.main{padding:20px}.topbar{padding:0 16px}.mobile-menu{display:block!important}.two{grid-template-columns:1fr}.category-list{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.stats,.banner-grid,.media-grid,.settings-grid,.category-list{grid-template-columns:1fr}.page-head{display:block}.actions{margin-top:15px}.field-row{grid-template-columns:1fr}.brand-title span{display:none}.user-chip{display:none}}
+.visual-layout-editor{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.visual-editor-main,.visual-editor-side{min-width:0}
+.visual-editor-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;background:#17191b;border:1px solid #303438;border-radius:10px;padding:11px 13px}
+.visual-editor-toolbar strong{font-size:12px}.layout-dirty{display:inline-block;margin-left:9px;color:#d79d45;font-size:9px;font-weight:700}
+.preview-switch{display:flex;gap:5px}.preview-mode{border:1px solid #383d41;background:#202326;color:#aeb4ba;border-radius:7px;padding:7px 10px;font-size:10px;cursor:pointer}.preview-mode.active{background:#ef3b3b;color:#fff;border-color:#ef3b3b}
+.visual-preview-wrap{background:#0d0e0f;border:1px solid #303438;border-radius:12px;padding:20px;overflow:auto}
+.visual-preview{width:min(100%,1180px);margin:0 auto;background:#fff;color:#16181a;border-radius:5px;overflow:hidden;box-shadow:0 10px 35px rgba(0,0,0,.22);font-family:Arial,sans-serif}
+.visual-preview.mobile{width:390px;max-width:100%}
+.vp-topbar{height:18px;background:#17191b}.vp-header{height:48px;border-bottom:1px solid #ddd;display:flex;align-items:center;padding:0 16px;gap:16px}.vp-logo{font-weight:900;font-size:15px}.vp-search{margin-left:auto;width:100px;height:18px;background:#f0f1f2;border-radius:4px}.vp-nav{height:28px;background:#101112;color:#fff;display:flex;gap:16px;align-items:center;padding:0 16px;font-size:8px;font-weight:700}.vp-canvas{padding:14px;display:flex;flex-direction:column;gap:var(--vp-gap,12px)}.vp-block{position:relative;border:2px solid transparent;border-radius:7px;cursor:grab;transition:border-color .15s,transform .15s,opacity .15s;user-select:none}.vp-block:hover{border-color:#d4d7da}.vp-block.dragging{opacity:.42}.vp-block.drop-target{border-color:#ef3b3b;box-shadow:inset 0 3px 0 #ef3b3b}.vp-block.hidden-block{opacity:.38;filter:grayscale(1)}.vp-label{position:absolute;left:7px;top:6px;z-index:3;background:#101112;color:#fff;border-radius:4px;padding:3px 5px;font-size:7px;font-weight:800;letter-spacing:.2px}.vp-ad{height:48px;background:repeating-linear-gradient(135deg,#f1f2f3 0,#f1f2f3 8px,#e5e7e8 8px,#e5e7e8 16px);display:grid;place-items:center;color:#73787d;font-size:8px}.vp-breaking{height:28px;background:#f2f2f2;display:flex;align-items:center;padding:0 9px;font-size:8px;font-weight:700}.vp-breaking b{background:#ef3b3b;color:#fff;padding:4px 6px;margin-right:7px;border-radius:3px}.vp-hero{display:grid;grid-template-columns:1.55fr 1fr;gap:8px}.vp-hero-main{min-height:150px;background:linear-gradient(135deg,#25282b,#777);position:relative}.vp-hero-main img{width:100%;height:100%;object-fit:cover;display:block}.vp-hero-side{display:grid;grid-template-rows:1fr 1fr;gap:8px}.vp-mini{background:#e8eaec;display:flex;align-items:flex-end;padding:8px;font-size:8px;font-weight:800}.vp-content{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px}.vp-news{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.vp-card{height:70px;background:#eef0f1;border-radius:4px;position:relative}.vp-card:after{content:'Notícia';position:absolute;left:7px;bottom:7px;font-size:8px;font-weight:800}.vp-aside{background:#f0f1f2;min-height:145px;padding:8px;font-size:8px;font-weight:800}.vp-sports{height:82px;background:#17191b;color:#fff;padding:14px;font-size:10px;font-weight:900}.vp-newsletter{height:55px;background:#e8eaec;display:flex;align-items:center;padding:12px;font-size:9px;font-weight:800}.vp-footer{height:45px;background:#101112;color:#fff;display:grid;place-items:center;font-size:8px}.visual-block-list{display:flex;flex-direction:column;gap:7px}.visual-block-item{display:grid;grid-template-columns:28px minmax(0,1fr) 34px;align-items:center;gap:7px;padding:9px;border:1px solid #34383c;border-radius:8px;background:#202326;cursor:grab}.visual-block-item.dragging{opacity:.45}.visual-block-item .grip{color:#777f86;font-size:14px;text-align:center}.visual-block-item strong{font-size:10px;display:block}.visual-block-item small{color:#7f878e;font-size:8px}.visual-block-item .eye{border:0;background:transparent;color:#aeb4ba;cursor:pointer;font-size:14px}.visual-block-item.off{opacity:.45}.editor-muted{color:#8e959b;font-size:10px;line-height:1.45;margin-top:-5px}.drag-help{color:#7f878e;font-size:9px;padding:9px 2px;text-align:center}
+@media(max-width:1000px){.visual-layout-editor{grid-template-columns:1fr}.visual-editor-side{display:grid;grid-template-columns:1fr 1fr;gap:16px}.visual-editor-side .form-card{margin-top:0!important}}
+@media(max-width:650px){.visual-editor-side{grid-template-columns:1fr}.visual-preview-wrap{padding:8px}.visual-editor-toolbar{align-items:flex-start;flex-direction:column}.visual-preview.mobile{width:390px}.vp-content{grid-template-columns:1fr}.vp-aside{display:none}}
 .mobile-menu{display:none}
 .layout-builder{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px}
 .layout-list{display:flex;flex-direction:column;gap:9px}
@@ -246,43 +257,40 @@ td strong{font-size:12px}
 </section>
 
 <section class="page" id="page-layout">
-  <div class="page-head"><div><h1>Layout do portal</h1><p>Organize a posição dos blocos, defina o que aparece e ajuste a estrutura visual do portal sem editar código.</p></div><div class="actions"><button class="primary-btn" onclick="savePortalLayout()">Salvar layout</button><button class="ghost-btn" onclick="resetPortalLayout()">Restaurar padrão</button></div></div>
-  <div class="layout-builder">
-    <div class="form-card">
-      <h2>Ordem dos componentes</h2>
-      <p style="color:#8e959b;font-size:11px;line-height:1.5;margin-top:-7px">Use ↑ e ↓ para decidir onde cada bloco aparece na página inicial.</p>
-      <div id="layoutList" class="layout-list"></div>
+  <div class="page-head">
+    <div><h1>Editor visual do portal</h1><p>Arraste os blocos diretamente na prévia. A alteração aparece na hora; depois clique em Salvar layout.</p></div>
+    <div class="actions"><button class="primary-btn" onclick="savePortalLayout()">Salvar layout</button><button class="ghost-btn" onclick="resetPortalLayout()">Restaurar padrão</button></div>
+  </div>
+
+  <div class="visual-layout-editor">
+    <div class="visual-editor-main">
+      <div class="visual-editor-toolbar">
+        <div><strong>Prévia da página inicial</strong><span id="layoutDirty" class="layout-dirty">Alterações não salvas</span></div>
+        <div class="preview-switch"><button type="button" class="preview-mode active" data-mode="desktop" onclick="setLayoutPreviewMode('desktop')">Desktop</button><button type="button" class="preview-mode" data-mode="mobile" onclick="setLayoutPreviewMode('mobile')">Mobile</button></div>
+      </div>
+      <div class="visual-preview-wrap">
+        <div id="visualPreview" class="visual-preview desktop"></div>
+      </div>
+      <div class="drag-help">Arraste qualquer bloco para cima ou para baixo. O espaço indicado mostra onde ele será inserido.</div>
     </div>
-    <div>
+
+    <aside class="visual-editor-side">
       <div class="form-card">
         <h2>Estrutura</h2>
-        <div class="layout-controls">
-          <div class="field"><label>Largura máxima do portal (px)</label><input id="lMax" type="number" min="800" max="1800"></div>
-          <div class="field"><label>Espaçamento entre blocos (px)</label><input id="lGap" type="number" min="0" max="80"></div>
-          <div class="field"><label>Altura do destaque (px)</label><input id="lHero" type="number" min="180" max="700"></div>
-          <div class="field"><label>Colunas do destaque</label><select id="lHeroCols"><option value="1.55fr 1fr">Principal + lateral</option><option value="1fr">Uma coluna</option><option value="1.25fr 1fr">Equilibrado</option><option value="2fr 1fr">Principal amplo</option></select></div>
-          <div class="field" style="grid-column:1/-1"><label>Colunas de notícias + lateral</label><select id="lContentCols"><option value="1fr 310px">Conteúdo + lateral</option><option value="1fr">Uma coluna</option><option value="1.3fr 280px">Conteúdo amplo</option><option value="1fr 360px">Lateral ampla</option></select></div>
-        </div>
+        <p class="editor-muted">Clique em um bloco para ocultá-lo. Use o arraste para definir a ordem.</p>
+        <div id="visualBlockList" class="visual-block-list"></div>
       </div>
       <div class="form-card" style="margin-top:16px">
-        <h2>Componentes visíveis</h2>
-        <div class="toggle-grid">
-          <label class="toggle"><input id="showDemo" type="checkbox"> Aviso de demonstração</label>
-          <label class="toggle"><input id="showTopAd" type="checkbox"> Banner superior</label>
-          <label class="toggle"><input id="showBreaking" type="checkbox"> Última hora</label>
-          <label class="toggle"><input id="showHero" type="checkbox"> Destaque principal</label>
-          <label class="toggle"><input id="showSecondAd" type="checkbox"> Segundo banner</label>
-          <label class="toggle"><input id="showLatest" type="checkbox"> Últimas notícias</label>
-          <label class="toggle"><input id="showMostRead" type="checkbox"> Mais lidas / lateral</label>
-          <label class="toggle"><input id="showSports" type="checkbox"> Esportes</label>
-          <label class="toggle"><input id="showWideAd" type="checkbox"> Banner amplo</label>
-          <label class="toggle"><input id="showNewsletter" type="checkbox"> Newsletter</label>
-          <label class="toggle"><input id="showFooter" type="checkbox"> Rodapé</label>
-          <label class="toggle"><input id="showNav" type="checkbox"> Menu de categorias</label>
-          <label class="toggle"><input id="showTopbar" type="checkbox"> Barra superior</label>
+        <h2>Dimensões</h2>
+        <div class="layout-controls">
+          <div class="field"><label>Largura máxima (px)</label><input id="lMax" type="number" min="800" max="1800" oninput="liveLayoutChange()"></div>
+          <div class="field"><label>Espaçamento (px)</label><input id="lGap" type="number" min="0" max="80" oninput="liveLayoutChange()"></div>
+          <div class="field"><label>Altura do destaque (px)</label><input id="lHero" type="number" min="180" max="700" oninput="liveLayoutChange()"></div>
+          <div class="field"><label>Colunas do destaque</label><select id="lHeroCols" onchange="liveLayoutChange()"><option value="1.55fr 1fr">Principal + lateral</option><option value="1fr">Uma coluna</option><option value="1.25fr 1fr">Equilibrado</option><option value="2fr 1fr">Principal amplo</option></select></div>
+          <div class="field" style="grid-column:1/-1"><label>Colunas de notícias + lateral</label><select id="lContentCols" onchange="liveLayoutChange()"><option value="1fr 310px">Conteúdo + lateral</option><option value="1fr">Uma coluna</option><option value="1.3fr 280px">Conteúdo amplo</option><option value="1fr 360px">Lateral ampla</option></select></div>
         </div>
       </div>
-    </div>
+    </aside>
   </div>
 </section>
 
@@ -312,7 +320,7 @@ td strong{font-size:12px}
 const SUPABASE_URL="https://gbsqwfpohvepaylcwcbl.supabase.co";
 const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let db={categories:[],news:[],banners:[],bannerAds:[],media:[],settings:{}};
+let db={categories:[],news:[],banners:[],bannerAds:[],media:[],settings:{},layout:{}};
 let editingId=null;
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -329,7 +337,7 @@ function authScreen(){
 }
 async function auth(signup){const email=$('authEmail').value.trim(),password=$('authPass').value;if(!email||password.length<6){$('authMsg').textContent='Informe e-mail e senha com pelo menos 6 caracteres.';return} $('authMsg').textContent='Processando...';const r=signup?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(r.error){$('authMsg').textContent=r.error.message;return} if(signup&&!r.data.session){$('authMsg').textContent='Conta criada. Confirme o e-mail se o projeto exigir confirmação e depois entre.';return} $('auth').remove();boot()}
 async function loadDb(){
- const [c,n,b,a,m,s]=await Promise.all([
+ const [c,n,b,a,m,s,l]=await Promise.all([
   sb.from('categories').select('*').order('name'),
   sb.from('news').select('*').order('created_at',{ascending:false}),
   sb.from('banners').select('*').order('slot'),
@@ -338,14 +346,14 @@ async function loadDb(){
   sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
   sb.from('site_layout').select('*').eq('id',1).maybeSingle()
  ]);
- for(const r of [c,n,b,a,m,s]) if(r.error) throw r.error;
+ for(const r of [c,n,b,a,m,s,l]) if(r.error) throw r.error;
  db.categories=c.data||[];
  db.news=n.data||[];
  db.banners=b.data||[];
  db.bannerAds=a.data||[];
  db.media=m.data||[];
  db.settings=s.data||{name:'Agora Notícias'};
- db.layout=s.data?.config||{mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
+ db.layout=l.data?.config||{mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
 }
 function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.side-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('page-'+page).classList.add('active');if(page==='dashboard')renderDashboard();if(page==='news')renderNewsTable();if(page==='new-news'){populateCategories();if(!editingId)resetForm()}if(page==='categories')renderCategories();if(page==='media')renderMedia();if(page==='banners')renderBanners();if(page==='layout')renderPortalLayout();if(page==='settings')renderSettings();$('sidebar').classList.remove('open')}
 function openNewNews(){editingId=null;navigate('new-news')}
@@ -453,38 +461,82 @@ async function removeBanner(id){
 
 const DEFAULT_LAYOUT={mainMaxWidth:1180,mainGap:24,heroHeight:350,heroColumns:'1.55fr 1fr',contentColumns:'1fr 310px',showDemoNote:true,showBreaking:true,showHero:true,showLatest:true,showMostRead:true,showSports:true,showNewsletter:true,showFooter:true,showTopAd:true,showSecondAd:true,showWideAd:true,showNav:true,showTopbar:true,componentOrder:['demo','ad1','breaking','hero','ad2','content','sports','wideAd','newsletter']};
 const LAYOUT_LABELS={demo:'Aviso de demonstração',ad1:'Banner superior',breaking:'Última hora',hero:'Destaque principal',ad2:'Segundo banner',content:'Últimas notícias + lateral',sports:'Bloco de esportes',wideAd:'Banner amplo',newsletter:'Newsletter'};
+let layoutPreviewMode='desktop',layoutDragId=null,layoutDirty=false;
+function currentLayout(){return {...DEFAULT_LAYOUT,...(db.layout||{}),componentOrder:[...((db.layout&&db.layout.componentOrder)||DEFAULT_LAYOUT.componentOrder)]}}
+function markLayoutDirty(){layoutDirty=true;const d=$('layoutDirty');if(d)d.textContent='Alterações não salvas'}
 function renderPortalLayout(){
- const l={...DEFAULT_LAYOUT,...(db.layout||{})};
+ const l=currentLayout();
  $('lMax').value=l.mainMaxWidth;$('lGap').value=l.mainGap;$('lHero').value=l.heroHeight;$('lHeroCols').value=l.heroColumns;$('lContentCols').value=l.contentColumns;
- const vis={Demo:!!l.showDemoNote,TopAd:!!l.showTopAd,Breaking:!!l.showBreaking,Hero:!!l.showHero,SecondAd:!!l.showSecondAd,Latest:!!l.showLatest,MostRead:!!l.showMostRead,Sports:!!l.showSports,WideAd:!!l.showWideAd,Newsletter:!!l.showNewsletter,Footer:!!l.showFooter,Nav:!!l.showNav,Topbar:!!l.showTopbar};
- Object.keys(vis).forEach(k=>{if($('show'+k))$('show'+k).checked=vis[k]});
- const order=[...(l.componentOrder||DEFAULT_LAYOUT.componentOrder)];
- $('layoutList').innerHTML=order.map((id,i)=>'<div class="layout-item" data-layout-id="'+id+'"><div class="handle">☷</div><div><strong>'+esc(LAYOUT_LABELS[id]||id)+'</strong><small>Posição '+(i+1)+'</small></div><div class="move-actions"><button class="ghost-btn" onclick="moveLayout(\''+id+'\',-1)">↑</button><button class="ghost-btn" onclick="moveLayout(\''+id+'\',1)">↓</button></div></div>').join('');
+ renderVisualPreview(l);
+ renderVisualBlockList(l);
 }
-function collectPortalLayout(){
- const l={...DEFAULT_LAYOUT,...(db.layout||{})};
- l.mainMaxWidth=Math.max(800,Math.min(1800,Number($('lMax').value)||1180));
- l.mainGap=Math.max(0,Math.min(80,Number($('lGap').value)||24));
- l.heroHeight=Math.max(180,Math.min(700,Number($('lHero').value)||350));
- l.heroColumns=$('lHeroCols').value;l.contentColumns=$('lContentCols').value;
- l.showDemoNote=$('showDemo').checked;l.showTopAd=$('showTopAd').checked;l.showBreaking=$('showBreaking').checked;l.showHero=$('showHero').checked;l.showSecondAd=$('showSecondAd').checked;l.showLatest=$('showLatest').checked;l.showMostRead=$('showMostRead').checked;l.showSports=$('showSports').checked;l.showWideAd=$('showWideAd').checked;l.showNewsletter=$('showNewsletter').checked;l.showFooter=$('showFooter').checked;l.showNav=$('showNav').checked;l.showTopbar=$('showTopbar').checked;
- l.componentOrder=[...document.querySelectorAll('#layoutList .layout-item')].map(el=>el.dataset.layoutId);
- return l;
+function renderVisualBlockList(l){
+ const list=$('visualBlockList');if(!list)return;
+ list.innerHTML=l.componentOrder.map((id,i)=>'<div class="visual-block-item '+(layoutBlockVisible(l,id)?'':'off')+'" draggable="true" data-layout-id="'+esc(id)+'"><div class="grip">☷</div><div><strong>'+esc(LAYOUT_LABELS[id]||id)+'</strong><small>Posição '+(i+1)+'</small></div><button type="button" class="eye" title="Mostrar/ocultar" aria-label="Mostrar ou ocultar '+esc(LAYOUT_LABELS[id]||id)+'" onclick="event.stopPropagation();toggleLayoutBlock(\''+id+'\')">'+(layoutBlockVisible(l,id)?'●':'○')+'</button></div>').join('');
+ list.querySelectorAll('.visual-block-item').forEach(el=>{
+  el.addEventListener('dragstart',()=>{layoutDragId=el.dataset.layoutId;el.classList.add('dragging')});
+  el.addEventListener('dragend',()=>{layoutDragId=null;el.classList.remove('dragging');renderPortalLayout()});
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drop-target')});
+  el.addEventListener('dragleave',()=>el.classList.remove('drop-target'));
+  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drop-target');reorderLayout(layoutDragId,el.dataset.layoutId)});
+ });
 }
-function moveLayout(id,dir){
- const l=collectPortalLayout(),i=l.componentOrder.indexOf(id),j=i+dir;
- if(i<0||j<0||j>=l.componentOrder.length)return;
- [l.componentOrder[i],l.componentOrder[j]]=[l.componentOrder[j],l.componentOrder[i]];
- db.layout=l;renderPortalLayout();
+function layoutBlockVisible(l,id){
+ const map={demo:'showDemoNote',ad1:'showTopAd',breaking:'showBreaking',hero:'showHero',ad2:'showSecondAd',content:'showLatest',sports:'showSports',wideAd:'showWideAd',newsletter:'showNewsletter'};
+ return map[id]?l[map[id]]!==false:true;
 }
+function renderVisualPreview(l){
+ const p=$('visualPreview');if(!p)return;
+ p.className='visual-preview '+layoutPreviewMode;
+ p.style.setProperty('--vp-gap',Math.max(4,Math.min(40,Number(l.mainGap)||12))+'px');
+ const first=db.news.find(n=>n.featured)||db.news[0];
+ const image=first&&first.image_url?esc(first.image_url):'';
+ const title=first?esc(first.title||'Destaque principal'):'Destaque principal';
+ const blocks={
+  demo:'<div class="vp-block" data-layout-id="demo"><span class="vp-label">Aviso</span><div class="vp-breaking">Portal em demonstração</div></div>',
+  ad1:'<div class="vp-block" data-layout-id="ad1"><span class="vp-label">Banner superior</span><div class="vp-ad">ESPAÇO PUBLICITÁRIO</div></div>',
+  breaking:'<div class="vp-block" data-layout-id="breaking"><span class="vp-label">Última hora</span><div class="vp-breaking"><b>ÚLTIMA HORA</b> Manchete em destaque</div></div>',
+  hero:'<div class="vp-block" data-layout-id="hero"><span class="vp-label">Destaque principal</span><div class="vp-hero" style="grid-template-columns:'+esc(l.heroColumns)+';min-height:'+Math.max(120,Math.min(420,Number(l.heroHeight)||350)/2.2)+'px"><div class="vp-hero-main">'+(image?'<img src="'+image+'" alt="">':'')+'<div style="position:absolute;left:10px;bottom:10px;color:#fff;font-size:11px;font-weight:900;text-shadow:0 1px 3px #000">'+title+'</div></div><div class="vp-hero-side"><div class="vp-mini">Notícia secundária</div><div class="vp-mini">Outra notícia</div></div></div></div>',
+  ad2:'<div class="vp-block" data-layout-id="ad2"><span class="vp-label">Segundo banner</span><div class="vp-ad">ESPAÇO PUBLICITÁRIO</div></div>',
+  content:'<div class="vp-block" data-layout-id="content"><span class="vp-label">Conteúdo + lateral</span><div class="vp-content" style="grid-template-columns:'+esc(l.contentColumns)+'"><div class="vp-news"><div class="vp-card"></div><div class="vp-card"></div><div class="vp-card"></div><div class="vp-card"></div></div><div class="vp-aside">MAIS LIDAS<br><br>1. Manchete<br>2. Notícia<br>3. Notícia</div></div></div>',
+  sports:'<div class="vp-block" data-layout-id="sports"><span class="vp-label">Esportes</span><div class="vp-sports">ESPORTES</div></div>',
+  wideAd:'<div class="vp-block" data-layout-id="wideAd"><span class="vp-label">Banner amplo</span><div class="vp-ad" style="height:72px">BANNER AMPLO</div></div>',
+  newsletter:'<div class="vp-block" data-layout-id="newsletter"><span class="vp-label">Newsletter</span><div class="vp-newsletter">Receba as principais notícias</div></div>'
+ };
+ const order=l.componentOrder||DEFAULT_LAYOUT.componentOrder;
+ p.innerHTML='<div class="vp-topbar"></div><div class="vp-header"><div class="vp-logo">'+esc(db.settings.name||'Agora Notícias')+'</div><div class="vp-search"></div></div><div class="vp-nav">INÍCIO&nbsp;&nbsp;&nbsp; NOTÍCIAS&nbsp;&nbsp;&nbsp; ESPORTES&nbsp;&nbsp;&nbsp; POLÍTICA&nbsp;&nbsp;&nbsp; CIDADES</div><div class="vp-canvas">'+order.map(id=>blocks[id]||'').join('')+'</div><div class="vp-footer">Rodapé do portal</div>';
+ p.querySelectorAll('.vp-block').forEach(el=>{
+  const id=el.dataset.layoutId;
+  if(!layoutBlockVisible(l,id))el.classList.add('hidden-block');
+  el.draggable=true;
+  el.addEventListener('dragstart',()=>{layoutDragId=id;el.classList.add('dragging')});
+  el.addEventListener('dragend',()=>{layoutDragId=null;el.classList.remove('dragging');p.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));renderPortalLayout()});
+  el.addEventListener('dragover',e=>{e.preventDefault();if(layoutDragId!==id)el.classList.add('drop-target')});
+  el.addEventListener('dragleave',()=>el.classList.remove('drop-target'));
+  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drop-target');reorderLayout(layoutDragId,id)});
+ });
+}
+function reorderLayout(from,to){
+ if(!from||!to||from===to)return;
+ const l=currentLayout(),a=l.componentOrder.indexOf(from),b=l.componentOrder.indexOf(to);
+ if(a<0||b<0)return;
+ l.componentOrder.splice(a,1);l.componentOrder.splice(l.componentOrder.indexOf(to)+(a<b?0:1),0,from);
+ db.layout=l;markLayoutDirty();renderPortalLayout();
+}
+function toggleLayoutBlock(id){
+ const l=currentLayout(),map={demo:'showDemoNote',ad1:'showTopAd',breaking:'showBreaking',hero:'showHero',ad2:'showSecondAd',content:'showLatest',sports:'showSports',wideAd:'showWideAd',newsletter:'showNewsletter'};
+ if(map[id])l[map[id]]=!layoutBlockVisible(l,id);
+ db.layout=l;markLayoutDirty();renderPortalLayout();
+}
+function liveLayoutChange(){const l=currentLayout();l.mainMaxWidth=Math.max(800,Math.min(1800,Number($('lMax').value)||1180));l.mainGap=Math.max(0,Math.min(80,Number($('lGap').value)||24));l.heroHeight=Math.max(180,Math.min(700,Number($('lHero').value)||350));l.heroColumns=$('lHeroCols').value;l.contentColumns=$('lContentCols').value;db.layout=l;markLayoutDirty();renderVisualPreview(l)}
+function setLayoutPreviewMode(mode){layoutPreviewMode=mode;document.querySelectorAll('.preview-mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));renderVisualPreview(currentLayout())}
 async function savePortalLayout(){
- const config=collectPortalLayout();
+ const config=currentLayout();
  const r=await sb.from('site_layout').upsert({id:1,config,updated_at:new Date().toISOString()});
  if(r.error){showToast(r.error.message);return}
- db.layout=config;showToast('Layout do portal salvo.');
+ db.layout=config;layoutDirty=false;$('layoutDirty').textContent='Salvo';showToast('Layout visual do portal salvo.');
 }
-function resetPortalLayout(){db.layout={...DEFAULT_LAYOUT,componentOrder:[...DEFAULT_LAYOUT.componentOrder]};renderPortalLayout();showToast('Padrão carregado. Clique em Salvar layout para aplicar.')}
-
+function resetPortalLayout(){db.layout={...DEFAULT_LAYOUT,componentOrder:[...DEFAULT_LAYOUT.componentOrder]};layoutDirty=true;$('layoutDirty').textContent='Padrão carregado — clique em Salvar';renderPortalLayout();showToast('Padrão carregado na prévia.')}
 function renderSettings(){const s=db.settings||{};$('sName').value=s.name||'';$('sDescription').value=s.description||'';$('sLogo').value=s.logo_url||'';$('sEmail').value=s.email||'';$('sWhats').value=s.whatsapp||'';$('sInstagram').value=s.instagram||''}
 async function saveSettings(){const payload={name:$('sName').value,description:$('sDescription').value,logo_url:$('sLogo').value,email:$('sEmail').value,whatsapp:$('sWhats').value,instagram:$('sInstagram').value,updated_at:new Date().toISOString()};const r=await sb.from('site_settings').upsert({id:1,...payload});if(r.error)showToast(r.error.message);else{await loadDb();showToast('Configurações salvas no Supabase.')}}
 async function signOut(){await sb.auth.signOut();location.reload()}
