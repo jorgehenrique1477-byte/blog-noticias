@@ -300,32 +300,74 @@ function renderSiteSettings(){
    footer.innerHTML='';
  }
 }
+let bannerTimers=new Map();
+function isVideoUrl(url){
+ const clean=String(url||'').split('?')[0].split('#')[0].toLowerCase();
+ return clean.endsWith('.mp4')||clean.endsWith('.webm')||clean.endsWith('.ogg')||clean.endsWith('.m4v');
+}
+function clearBannerRotations(){
+ bannerTimers.forEach(timer=>clearInterval(timer));
+ bannerTimers.clear();
+}
+function bannerPoolForSlot(slot){
+ const side=slot===3||slot===4;
+ return banners.filter(b=>{
+  if(!b.active||!b.image_url)return false;
+  const bSide=Number(b.width_px)===300||Number(b.width_px)<600;
+  return side===bSide;
+ });
+}
+function renderBannerFrame(el,b,width,height,fit,pos){
+ const mediaUrl=String(b.image_url).replace(/"/g,'&quot;');
+ const video=isVideoUrl(b.image_url);
+ el.innerHTML=video
+  ? '<video src="'+mediaUrl+'" autoplay muted playsinline preload="metadata" aria-label="Publicidade"></video>'
+  : '<img src="'+mediaUrl+'" alt="Publicidade">';
+ const media=el.firstElementChild;
+ media.style.width='100%';
+ media.style.height='100%';
+ media.style.objectFit=fit;
+ media.style.objectPosition=pos;
+ media.style.display='block';
+ el.style.width='100%';
+ el.style.maxWidth=width+'px';
+ el.style.height=height+'px';
+ el.style.marginLeft='auto';
+ el.style.marginRight='auto';
+ el.style.backgroundImage='';
+ el.style.backgroundColor='#f6f7f8';
+}
 function renderBanners(){
+ clearBannerRotations();
  document.querySelectorAll('[data-banner-slot]').forEach(el=>{
-   const slot=Number(el.dataset.bannerSlot), b=banners.find(x=>Number(x.slot)===slot && x.active && x.image_url);
-   if(b){
-     const width=Math.max(100,Math.min(3000,Number(b.width_px)||((slot===3||slot===4)?300:970)));
-     const height=Math.max(50,Math.min(1200,Number(b.height_px)||((slot===1||slot===2)?90:250)));
-     const fit=b.image_fit||'cover';
-     const pos=b.image_position||'center';
-     el.innerHTML='';
-     el.style.width='100%';
-     el.style.maxWidth=width+'px';
-     el.style.height=height+'px';
-     el.style.marginLeft='auto';
-     el.style.marginRight='auto';
-     el.style.backgroundImage='url("'+String(b.image_url).replace(/"/g,'\\"')+'")';
-     el.style.backgroundSize=fit;
-     el.style.backgroundRepeat='no-repeat';
-     el.style.backgroundPosition=pos;
-     el.style.backgroundColor='#f6f7f8';
-     el.style.borderStyle='solid';
-     el.setAttribute('aria-label','Publicidade');
-   } else {
-     el.style.width='';el.style.maxWidth='';el.style.marginLeft='';el.style.marginRight='';
-     el.style.backgroundImage='';el.style.backgroundSize='';el.style.backgroundRepeat='';el.style.backgroundPosition='';el.style.height='';
-     el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';
-   }
+  const slot=Number(el.dataset.bannerSlot);
+  const pool=bannerPoolForSlot(slot);
+  if(!pool.length){
+   el.style.width='';
+   el.style.maxWidth='';
+   el.style.height='';
+   el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';
+   return;
+  }
+  let index=0;
+  const first=pool[0];
+  const width=Math.max(100,Math.min(3000,Number(first.width_px)||((slot===3||slot===4)?300:970)));
+  const height=Math.max(50,Math.min(1200,Number(first.height_px)||((slot===1||slot===2)?90:250)));
+  renderBannerFrame(el,first,width,height,first.image_fit||'cover',first.image_position||'center');
+  if(pool.length>1){
+   const timer=setInterval(()=>{
+    index=(index+1)%pool.length;
+    const b=pool[index];
+    const w=Math.max(100,Math.min(3000,Number(b.width_px)||width));
+    const h=Math.max(50,Math.min(1200,Number(b.height_px)||height));
+    el.style.opacity='0';
+    setTimeout(()=>{
+     renderBannerFrame(el,b,w,h,b.image_fit||'cover',b.image_position||'center');
+     el.style.opacity='1';
+    },180);
+   },2000);
+   bannerTimers.set(el,timer);
+  }
  });
 }
 function renderCategories(){
