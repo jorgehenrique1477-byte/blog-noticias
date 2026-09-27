@@ -252,7 +252,7 @@ td strong{font-size:12px}
 const SUPABASE_URL="https://gbsqwfpohvepaylcwcbl.supabase.co";
 const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let db={categories:[],news:[],banners:[],media:[],settings:{}};
+let db={categories:[],news:[],banners:[],bannerAds:[],media:[],settings:{}};
 let editingId=null;
 const $=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -269,9 +269,21 @@ function authScreen(){
 }
 async function auth(signup){const email=$('authEmail').value.trim(),password=$('authPass').value;if(!email||password.length<6){$('authMsg').textContent='Informe e-mail e senha com pelo menos 6 caracteres.';return} $('authMsg').textContent='Processando...';const r=signup?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});if(r.error){$('authMsg').textContent=r.error.message;return} if(signup&&!r.data.session){$('authMsg').textContent='Conta criada. Confirme o e-mail se o projeto exigir confirmação e depois entre.';return} $('auth').remove();boot()}
 async function loadDb(){
- const [c,n,b,m,s]=await Promise.all([sb.from('categories').select('*').order('name'),sb.from('news').select('*').order('created_at',{ascending:false}),sb.from('banners').select('*').order('slot'),sb.from('media').select('*').order('created_at',{ascending:false}),sb.from('site_settings').select('*').eq('id',1).maybeSingle()]);
- for(const r of [c,n,b,m,s]) if(r.error) throw r.error;
- db.categories=c.data||[];db.news=n.data||[];db.banners=b.data||[];db.media=m.data||[];db.settings=s.data||{name:'Agora Notícias'};
+ const [c,n,b,a,m,s]=await Promise.all([
+  sb.from('categories').select('*').order('name'),
+  sb.from('news').select('*').order('created_at',{ascending:false}),
+  sb.from('banners').select('*').order('slot'),
+  sb.from('banner_ads').select('*').order('sort_order'),
+  sb.from('media').select('*').order('created_at',{ascending:false}),
+  sb.from('site_settings').select('*').eq('id',1).maybeSingle()
+ ]);
+ for(const r of [c,n,b,a,m,s]) if(r.error) throw r.error;
+ db.categories=c.data||[];
+ db.news=n.data||[];
+ db.banners=b.data||[];
+ db.bannerAds=a.data||[];
+ db.media=m.data||[];
+ db.settings=s.data||{name:'Agora Notícias'};
 }
 function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.side-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('page-'+page).classList.add('active');if(page==='dashboard')renderDashboard();if(page==='news')renderNewsTable();if(page==='new-news'){populateCategories();if(!editingId)resetForm()}if(page==='categories')renderCategories();if(page==='media')renderMedia();if(page==='banners')renderBanners();if(page==='settings')renderSettings();$('sidebar').classList.remove('open')}
 function openNewNews(){editingId=null;navigate('new-news')}
@@ -290,6 +302,16 @@ async function uploadNewsImage(){const file=$('fImage').files[0];if(!file)return
 async function renderMedia(){const items=db.media;$('mediaGrid').innerHTML=items.length?items.map(m=>`<div class="media-item"><div class="media-thumb" style="background-image:url('${m.url}')"></div><div class="media-info"><strong>${esc(m.name)}</strong><small>${esc(m.mime_type||'')}</small><div style="margin-top:8px"><button class="danger-btn" style="padding:6px 8px;font-size:9px" onclick="removeMedia('${m.id}')">Excluir</button></div></div></div>`).join(''):`<div class="empty" style="grid-column:1/-1">A biblioteca está vazia.</div>`}
 async function addMediaFiles(files){for(const file of files){try{const url=await uploadFile(file,'media');await sb.from('media').insert({name:file.name,url,mime_type:file.type})}catch(e){showToast(e.message)}}await loadDb();renderMedia();showToast('Mídia sincronizada com o Supabase.')}
 async function removeMedia(id){const m=db.media.find(x=>x.id===id);const r=await sb.from('media').delete().eq('id',id);if(r.error)showToast(r.error.message);else{await loadDb();renderMedia();showToast('Imagem removida.')}}
+function isVideoUrl(url){
+ const clean=String(url||'').split('?')[0].split('#')[0].toLowerCase();
+ return clean.endsWith('.mp4')||clean.endsWith('.webm')||clean.endsWith('.ogg')||clean.endsWith('.m4v');
+}
+function renderBannerMedia(ad){
+ const url=esc(ad.media_url||'');
+ return isVideoUrl(ad.media_url)
+  ? '<video src="'+url+'" muted autoplay loop playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>'
+  : '<img src="'+url+'" alt="Publicidade" style="width:100%;height:100%;object-fit:cover;display:block">';
+}
 function renderBanners(){
  const grid=$('bannerGrid');
  grid.innerHTML=db.banners.map(b=>{
@@ -297,36 +319,51 @@ function renderBanners(){
    const height=Math.max(50,Math.min(1200,Number(b.height_px)||250));
    const fit=b.image_fit||'cover';
    const pos=b.image_position||'center';
-   const previewStyle=b.image_url ? 'background-image:url(\''+esc(b.image_url)+'\');background-size:'+fit+';background-position:'+pos+';' : '';
+   const ads=db.bannerAds.filter(a=>a.banner_id===b.id&&a.active).sort((x,y)=>Number(x.sort_order)-Number(y.sort_order));
+   const fallback=b.image_url?[{id:'legacy',media_url:b.image_url,sort_order:0}]:[];
+   const items=ads.length?ads:fallback;
+   const previews=items.map((ad,index)=>'<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #303438;border-radius:8px;padding:7px;background:#151719"><div style="height:70px;border-radius:5px;overflow:hidden;background:#0e0f10">'+renderBannerMedia(ad)+'</div><button class="danger-btn" style="padding:6px 8px;font-size:9px" onclick="'+(ad.id==='legacy'?'removeBanner(\''+b.id+'\')':'removeBannerAd(\''+ad.id+'\')')+'">Remover</button></div>').join('');
+   const inputs=[0,1,2].map(n=>'<input id="bannerAdFile'+b.id+'_'+n+'" type="file" accept="image/*,video/*" hidden>').join('');
    return '<div class="banner-card '+(b.active?'active':'')+'">'+
      '<div class="slot"><span>Banner '+b.slot+'</span>'+(b.active?'<span class="status published">Ativo</span>':'<span class="status archived">Vazio</span>')+'</div>'+
-     '<div class="banner-preview" style="'+previewStyle+'height:'+height+'px">'+(b.image_url?'':'Clique para adicionar imagem')+'</div>'+
+     '<div class="banner-preview" style="height:'+height+'px;'+(b.image_url?'background-image:url(\''+esc(b.image_url)+'\');background-size:'+fit+';background-position:'+pos+';':'')+'">'+(b.image_url?'':'Clique para adicionar mídia')+'</div>'+
      '<div class="banner-meta"><span>'+(b.active?'Publicado':'Disponível')+'</span><span>'+width+' × '+height+' px</span></div>'+
-     '<div class="field" style="margin:12px 0 10px"><label style="font-size:9px">Layout</label><select id="bannerPreset'+b.id+'" onchange="applyBannerPreset(\''+b.id+'\',this.value)" style="padding:8px"><option value="custom">Personalizado</option><option value="wide">Horizontal 970 × 90</option><option value="billboard">Horizontal 970 × 250</option><option value="side">Lateral 300 × 250</option><option value="square">Quadrado 300 × 300</option></select></div>'+
-     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-       '<div class="field" style="margin:0"><label style="font-size:9px">Largura (px)</label><input id="bannerWidth'+b.id+'" type="number" min="100" max="3000" value="'+width+'" style="padding:8px"></div>'+
-       '<div class="field" style="margin:0"><label style="font-size:9px">Altura (px)</label><input id="bannerHeight'+b.id+'" type="number" min="50" max="1200" value="'+height+'" style="padding:8px"></div>'+
-     '</div>'+
-     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">'+
-       '<div class="field" style="margin:0"><label style="font-size:9px">Ajuste da imagem</label><select id="bannerFit'+b.id+'" style="padding:8px"><option value="cover" '+(fit==='cover'?'selected':'')+'>Preencher</option><option value="contain" '+(fit==='contain'?'selected':'')+'>Encaixar sem cortar</option><option value="fill" '+(fit==='fill'?'selected':'')+'>Esticar</option></select></div>'+
-       '<div class="field" style="margin:0"><label style="font-size:9px">Posição</label><select id="bannerPosition'+b.id+'" style="padding:8px"><option value="center" '+(pos==='center'?'selected':'')+'>Centro</option><option value="top" '+(pos==='top'?'selected':'')+'>Topo</option><option value="bottom" '+(pos==='bottom'?'selected':'')+'>Base</option><option value="left" '+(pos==='left'?'selected':'')+'>Esquerda</option><option value="right" '+(pos==='right'?'selected':'')+'>Direita</option></select></div>'+
-     '</div>'+
-     '<div class="banner-actions"><button class="ghost-btn" onclick="bannerUpload(\''+b.id+'\')">'+(b.image_url?'Trocar imagem':'Upload')+'</button><button class="success-btn" onclick="saveBannerLayout(\''+b.id+'\')">Salvar ajustes</button><button class="danger-btn" onclick="removeBanner(\''+b.id+'\')">Remover</button></div>'+
-     '<input id="bannerFile'+b.id+'" type="file" accept="image/*" hidden></div>';
+     '<div style="margin-top:12px"><label style="font-size:9px;display:block;margin-bottom:6px">Anúncios deste espaço · até 3</label><div style="display:grid;gap:7px">'+(previews||'<small style="color:#8f969d">Nenhum anúncio cadastrado.</small>')+'</div></div>'+
+     '<div style="display:flex;gap:7px;margin-top:9px">'+[0,1,2].map(n=>'<button class="ghost-btn" onclick="bannerAdUpload(\''+b.id+'\','+n+')">+ Anúncio '+(n+1)+'</button>').join('')+'</div>'+
+     '<div class="field" style="margin:12px 0 10px"><label style="font-size:9px">Layout do espaço</label><select id="bannerPreset'+b.id+'" onchange="applyBannerPreset(\''+b.id+'\',this.value)" style="padding:8px"><option value="custom">Personalizado</option><option value="wide">Horizontal 970 × 90</option><option value="billboard">Horizontal 970 × 250</option><option value="side">Lateral 300 × 250</option><option value="square">Quadrado 300 × 300</option></select></div>'+
+     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="field" style="margin:0"><label style="font-size:9px">Largura (px)</label><input id="bannerWidth'+b.id+'" type="number" min="100" max="3000" value="'+width+'" style="padding:8px"></div><div class="field" style="margin:0"><label style="font-size:9px">Altura (px)</label><input id="bannerHeight'+b.id+'" type="number" min="50" max="1200" value="'+height+'" style="padding:8px"></div></div>'+
+     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><div class="field" style="margin:0"><label style="font-size:9px">Ajuste</label><select id="bannerFit'+b.id+'" style="padding:8px"><option value="cover" '+(fit==='cover'?'selected':'')+'>Preencher</option><option value="contain" '+(fit==='contain'?'selected':'')+'>Encaixar sem cortar</option><option value="fill" '+(fit==='fill'?'selected':'')+'>Esticar</option></select></div><div class="field" style="margin:0"><label style="font-size:9px">Posição</label><select id="bannerPosition'+b.id+'" style="padding:8px"><option value="center" '+(pos==='center'?'selected':'')+'>Centro</option><option value="top" '+(pos==='top'?'selected':'')+'>Topo</option><option value="bottom" '+(pos==='bottom'?'selected':'')+'>Base</option><option value="left" '+(pos==='left'?'selected':'')+'>Esquerda</option><option value="right" '+(pos==='right'?'selected':'')+'>Direita</option></select></div></div>'+
+     '<div class="banner-actions"><button class="success-btn" onclick="saveBannerLayout(\''+b.id+'\')">Salvar layout</button><button class="danger-btn" onclick="removeBanner(\''+b.id+'\')">Limpar espaço</button></div>'+inputs+'</div>';
  }).join('');
  db.banners.forEach(b=>{
-   const file=$('bannerFile'+b.id);
-   if(!file)return;
-   file.onchange=async e=>{
-     const f=e.target.files[0];if(!f)return;
-     try{
-       const url=await uploadFile(f,'banners');
-       const r=await sb.from('banners').update({image_url:url,active:true,width_px:Number($('bannerWidth'+b.id).value)||b.width_px||970,height_px:Number($('bannerHeight'+b.id).value)||b.height_px||250,image_fit:$('bannerFit'+b.id).value,image_position:$('bannerPosition'+b.id).value,updated_at:new Date().toISOString()}).eq('id',b.id);
-       if(r.error)throw r.error;
-       await loadDb();renderBanners();renderDashboard();showToast('Banner atualizado.');
-     }catch(err){showToast(err.message)}
-   };
+   [0,1,2].forEach(n=>{
+    const file=$('bannerAdFile'+b.id+'_'+n);
+    if(file)file.onchange=async e=>{const f=e.target.files[0];if(!f)return;await uploadBannerAd(b.id,n,f);file.value=''};
+   });
  });
+}
+async function uploadBannerAd(bannerId,order,file){
+ try{
+  const existing=db.bannerAds.filter(a=>a.banner_id===bannerId&&a.active).sort((x,y)=>Number(x.sort_order)-Number(y.sort_order));
+  if(existing.length>=3 && !existing.some(a=>Number(a.sort_order)===Number(order))){showToast('Este banner já possui 3 anúncios.');return}
+  const url=await uploadFile(file,'banners');
+  const mediaType=file.type.startsWith('video/')?'video':'image';
+  const same=existing.find(a=>Number(a.sort_order)===Number(order));
+  if(same){
+   const r=await sb.from('banner_ads').update({media_url:url,media_type:mediaType,active:true,updated_at:new Date().toISOString()}).eq('id',same.id);
+   if(r.error)throw r.error;
+  }else{
+   const r=await sb.from('banner_ads').insert({banner_id:bannerId,media_url:url,media_type:mediaType,active:true,sort_order:Number(order),updated_at:new Date().toISOString()});
+   if(r.error)throw r.error;
+  }
+  await sb.from('banners').update({active:true,updated_at:new Date().toISOString()}).eq('id',bannerId);
+  await loadDb();renderBanners();renderDashboard();showToast('Anúncio adicionado ao banner.');
+ }catch(e){showToast(e.message)}
+}
+async function removeBannerAd(id){
+ const r=await sb.from('banner_ads').delete().eq('id',id);
+ if(r.error){showToast(r.error.message);return}
+ await loadDb();renderBanners();renderDashboard();showToast('Anúncio removido.');
 }
 function applyBannerPreset(id,preset){
  const presets={wide:[970,90],billboard:[970,250],side:[300,250],square:[300,300]};
@@ -340,10 +377,14 @@ async function saveBannerLayout(id){
  const position=$('bannerPosition'+id).value;
  const r=await sb.from('banners').update({width_px:width,height_px:height,image_fit:fit,image_position:position,updated_at:new Date().toISOString()}).eq('id',id);
  if(r.error){showToast(r.error.message);return}
- await loadDb();renderBanners();renderDashboard();showToast('Ajustes do banner salvos.');
+ await loadDb();renderBanners();renderDashboard();showToast('Layout do banner salvo.');
 }
-function bannerUpload(id){$('bannerFile'+id).click()}
-async function removeBanner(id){const r=await sb.from('banners').update({image_url:'',active:false,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)showToast(r.error.message);else{await loadDb();renderBanners();renderDashboard();showToast('Espaço liberado.')}}
+function bannerUpload(id){$('bannerAdFile'+id+'_0').click()}
+async function removeBanner(id){
+ await sb.from('banner_ads').delete().eq('banner_id',id);
+ const r=await sb.from('banners').update({image_url:'',active:false,updated_at:new Date().toISOString()}).eq('id',id);
+ if(r.error)showToast(r.error.message);else{await loadDb();renderBanners();renderDashboard();showToast('Espaço liberado.')}
+}
 function renderSettings(){const s=db.settings||{};$('sName').value=s.name||'';$('sDescription').value=s.description||'';$('sLogo').value=s.logo_url||'';$('sEmail').value=s.email||'';$('sWhats').value=s.whatsapp||'';$('sInstagram').value=s.instagram||''}
 async function saveSettings(){const payload={name:$('sName').value,description:$('sDescription').value,logo_url:$('sLogo').value,email:$('sEmail').value,whatsapp:$('sWhats').value,instagram:$('sInstagram').value,updated_at:new Date().toISOString()};const r=await sb.from('site_settings').upsert({id:1,...payload});if(r.error)showToast(r.error.message);else{await loadDb();showToast('Configurações salvas no Supabase.')}}
 async function signOut(){await sb.auth.signOut();location.reload()}
