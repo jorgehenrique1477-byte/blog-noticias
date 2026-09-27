@@ -308,7 +308,7 @@ function applyPortalLayout(){
  const nav=document.getElementById('nav');if(nav)nav.style.display=l.showNav?'':'none';
  const topbar=document.getElementById('siteTopbar');if(topbar)topbar.style.display=l.showTopbar?'':'none';
  const hero=document.getElementById('heroArea');if(hero)hero.parentElement.style.gridTemplateColumns=l.heroColumns;
- const content=document.getElementById('layout-content');if(content)content.style.gridTemplateColumns=l.contentColumns;
+ const content=document.getElementById('layout-content');if(content)content.style.gridTemplateColumns=(l.showLatest&&l.showMostRead)?l.contentColumns:'1fr';
  document.querySelectorAll('.media.large').forEach(el=>el.style.height=Math.max(180,Math.min(700,Number(l.heroHeight)||350))+'px');
 }
 
