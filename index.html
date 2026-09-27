@@ -274,7 +274,7 @@ footer{background:#111416;color:#aeb4b9;margin-top:12px}
 const SUPABASE_URL="https://gbsqwfpohvepaylcwcbl.supabase.co";
 const SUPABASE_KEY="sb_publishable_mF64wrTdD93B_E5x6ErZzA_VQFpnwS8";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let news=[];let categories=[];let banners=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
+let news=[];let categories=[];let banners=[];let bannerAds=[];let settings={name:'Agora Notícias',description:'Informação local, regional e nacional.'};
 const heroArea=document.getElementById('heroArea'),newsList=document.getElementById('newsList'),sports=document.getElementById('sports'),mostRead=document.getElementById('mostRead'),noResults=document.getElementById('noResults'),modal=document.getElementById('modal'),modalContent=document.getElementById('modalContent'),toast=document.getElementById('toast');
 let articleOpen=false;
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -309,71 +309,92 @@ function clearBannerRotations(){
  bannerTimers.forEach(timer=>clearInterval(timer));
  bannerTimers.clear();
 }
-function bannerPoolForSlot(slot){
- const side=slot===3||slot===4;
- return banners.filter(b=>{
-  if(!b.active||!b.image_url)return false;
-  const bSide=Number(b.width_px)===300||Number(b.width_px)<600;
-  return side===bSide;
- });
+function bannerItemsForSlot(slot){
+ const parent=banners.find(b=>Number(b.slot)===Number(slot));
+ if(!parent)return [];
+ const ads=bannerAds.filter(a=>a.banner_id===parent.id&&a.active).sort((x,y)=>Number(x.sort_order)-Number(y.sort_order));
+ if(ads.length)return ads.map(a=>({...parent,image_url:a.media_url,media_type:a.media_type}));
+ if(parent.image_url)return [{...parent,media_type:isVideoUrl(parent.image_url)?'video':'image'}];
+ return [];
 }
-function renderBannerFrame(el,b,width,height,fit,pos){
- const mediaUrl=String(b.image_url).replace(/"/g,'&quot;');
- const video=isVideoUrl(b.image_url);
- el.innerHTML=video
-  ? '<video src="'+mediaUrl+'" autoplay muted playsinline preload="metadata" aria-label="Publicidade"></video>'
-  : '<img src="'+mediaUrl+'" alt="Publicidade">';
- const media=el.firstElementChild;
+function createBannerMedia(layer,item,fit,pos){
+ const url=String(item.image_url||'').replace(/"/g,'&quot;');
+ const video=item.media_type==='video'||isVideoUrl(item.image_url);
+ layer.innerHTML=video
+  ? '<video src="'+url+'" autoplay muted playsinline preload="metadata" aria-label="Publicidade"></video>'
+  : '<img src="'+url+'" alt="Publicidade">';
+ const media=layer.firstElementChild;
  media.style.width='100%';
  media.style.height='100%';
  media.style.objectFit=fit;
  media.style.objectPosition=pos;
  media.style.display='block';
- el.style.width='100%';
- el.style.maxWidth=width+'px';
- el.style.height=height+'px';
- el.style.marginLeft='auto';
- el.style.marginRight='auto';
- el.style.backgroundImage='';
- el.style.backgroundColor='#f6f7f8';
+ media.style.position='absolute';
+ media.style.inset='0';
+}
+function renderBannerFrame(el,item,fit,pos,visibleLayer){
+ const layers=el.querySelectorAll('.banner-media-layer');
+ if(!layers.length){
+  el.innerHTML='<div class="banner-media-layer"></div><div class="banner-media-layer"></div>';
+  el.style.position='relative';
+  el.style.overflow='hidden';
+  el.style.backgroundColor='#f6f7f8';
+ }
+ const target=el.querySelectorAll('.banner-media-layer')[visibleLayer?1:0];
+ const other=el.querySelectorAll('.banner-media-layer')[visibleLayer?0:1];
+ createBannerMedia(target,item,fit,pos);
+ target.style.opacity='1';
+ other.style.opacity='0';
+ target.style.zIndex='2';
+ other.style.zIndex='1';
 }
 function renderBanners(){
  clearBannerRotations();
  document.querySelectorAll('[data-banner-slot]').forEach(el=>{
   const slot=Number(el.dataset.bannerSlot);
-  const pool=bannerPoolForSlot(slot);
-  if(!pool.length){
+  const items=bannerItemsForSlot(slot);
+  if(!items.length){
    el.style.width='';
    el.style.maxWidth='';
    el.style.height='';
    el.innerHTML=slot===5?'ESPAÇO PUBLICITÁRIO · 970 × 250':slot<=2?'ESPAÇO PUBLICITÁRIO · 970 × 90':'ANÚNCIO<br><small>300 × 250</small>';
    return;
   }
-  let index=0;
-  const first=pool[0];
+  const first=items[0];
   const width=Math.max(100,Math.min(3000,Number(first.width_px)||((slot===3||slot===4)?300:970)));
   const height=Math.max(50,Math.min(1200,Number(first.height_px)||((slot===1||slot===2)?90:250)));
-  renderBannerFrame(el,first,width,height,first.image_fit||'cover',first.image_position||'center');
-  if(pool.length>1){
+  el.style.width='100%';
+  el.style.maxWidth=width+'px';
+  el.style.height=height+'px';
+  el.style.marginLeft='auto';
+  el.style.marginRight='auto';
+  el.style.transition='none';
+  el.innerHTML='<div class="banner-media-layer"></div><div class="banner-media-layer"></div>';
+  el.querySelectorAll('.banner-media-layer').forEach(layer=>{
+   layer.style.position='absolute';
+   layer.style.inset='0';
+   layer.style.opacity='0';
+   layer.style.transition='opacity .55s ease';
+  });
+  createBannerMedia(el.querySelector('.banner-media-layer'),first,first.image_fit||'cover',first.image_position||'center');
+  el.querySelector('.banner-media-layer').style.opacity='1';
+  let index=0,activeLayer=0;
+  if(items.length>1){
    const timer=setInterval(()=>{
-    index=(index+1)%pool.length;
-    const b=pool[index];
-    const w=Math.max(100,Math.min(3000,Number(b.width_px)||width));
-    const h=Math.max(50,Math.min(1200,Number(b.height_px)||height));
-    el.style.opacity='0';
-    setTimeout(()=>{
-     renderBannerFrame(el,b,w,h,b.image_fit||'cover',b.image_position||'center');
-     el.style.opacity='1';
-    },180);
+    index=(index+1)%items.length;
+    activeLayer=activeLayer?0:1;
+    const layers=el.querySelectorAll('.banner-media-layer');
+    const next=layers[activeLayer],current=layers[activeLayer?0:1];
+    const item=items[index];
+    createBannerMedia(next,item,item.image_fit||'cover',item.image_position||'center');
+    next.style.zIndex='2';
+    current.style.zIndex='1';
+    next.style.opacity='1';
+    current.style.opacity='0';
    },2000);
    bannerTimers.set(el,timer);
   }
  });
-}
-function renderCategories(){
- const nav=document.querySelector('.nav-inner');
- nav.innerHTML='<a href="#" data-category="Todas" class="active">Início</a>'+categories.map(c=>'<a href="#" data-category="'+esc(c.name)+'">'+esc(c.name)+'</a>').join('');
- nav.querySelectorAll('a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category);if(window.innerWidth<=820)document.getElementById('nav').classList.remove('open')});
 }
 function renderHome(){if(!news.length){heroArea.innerHTML='<div class="empty">Nenhuma notícia publicada ainda.</div>';newsList.innerHTML='';sports.innerHTML='';mostRead.innerHTML='';return}const hero=news.find(n=>n.featured)||news[0],side=news.filter(n=>n.id!==hero.id).slice(0,2);heroArea.innerHTML=`<article class="hero" data-id="${hero.id}" tabindex="0" role="button"><div class="media large has-photo ${hero.media}" style="background-image:url('${esc(hero.image)}')"><span class="tag">DESTAQUE</span></div><div class="hero-copy"><span class="kicker">${esc(hero.cat)}</span><h1>${esc(hero.title)}</h1><p class="excerpt">${esc(hero.excerpt)}</p><small class="meta">${esc(hero.time)} · Redação</small><small class="source-note">Fonte: ${esc(hero.source)}</small></div></article><div class="side-stories">${side.map(n=>card(n,'story')).join('')}</div>`;renderList(news.filter(n=>n.id!==hero.id).slice(0,8));sports.innerHTML=news.filter(n=>n.cat==='Esportes').slice(0,3).map(n=>card(n,'grid')).join('');mostRead.innerHTML=[...news].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5).map((n,i)=>`<li data-id="${n.id}" tabindex="0"><b>${String(i+1).padStart(2,'0')}</b><span>${esc(n.title)}</span></li>`).join('');bindCards()}
 function renderList(items){newsList.innerHTML=items.map(n=>card(n)).join('');noResults.style.display=items.length?'none':'block';bindCards()}
@@ -398,17 +419,19 @@ function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.cl
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 async function load(render=true){
- const [c,n,s,b]=await Promise.all([
+ const [c,n,s,b,a]=await Promise.all([
    sb.from('categories').select('*').order('name'),
    sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),
    sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
-   sb.from('banners').select('*').eq('active',true).order('slot')
+   sb.from('banners').select('*').eq('active',true).order('slot'),
+   sb.from('banner_ads').select('*').eq('active',true).order('sort_order')
  ]);
- if(c.error||n.error||s.error||b.error)throw(c.error||n.error||s.error||b.error);
+ if(c.error||n.error||s.error||b.error||a.error)throw(c.error||n.error||s.error||b.error||a.error);
  categories=c.data||[];
  news=(n.data||[]).map(mapNews);
  settings=s.data||settings;
  banners=b.data||[];
+ bannerAds=a.data||[];
  if(render){renderCategories();renderSiteSettings();renderBanners();renderHome();}
 }
 function subscribeRealtime(){
@@ -417,6 +440,7 @@ function subscribeRealtime(){
    .on('postgres_changes',{event:'*',schema:'public',table:'news'},refresh)
    .on('postgres_changes',{event:'*',schema:'public',table:'categories'},refresh)
    .on('postgres_changes',{event:'*',schema:'public',table:'banners'},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'banner_ads'},refresh)
    .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},refresh)
    .subscribe((status,err)=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.error('Realtime:',status,err)});
 }
