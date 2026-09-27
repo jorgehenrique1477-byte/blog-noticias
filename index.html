@@ -282,6 +282,14 @@ function catName(n){return n.category_name||categories.find(c=>c.id===n.category
 function mapNews(n){return {...n,cat:catName(n),time:(n.published_at||n.created_at||'').slice(0,10).split('-').reverse().join('/'),media:'m1',hero:!!n.featured,source:n.source||'Redação',image:n.image_url||''}}
 function showToast(message){toast.textContent=message;toast.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>toast.classList.remove('show'),2600)}
 function card(n,type='news'){const cls=type==='story'?'story-card':type==='grid'?'grid-card':'news-item';const heading=type==='hero'?'h1':type==='story'?'h2':'h3';return `<article class="${cls}" data-id="${n.id}" tabindex="0" role="button"><div class="media has-photo ${n.media} ${type==='hero'?'large':''}" style="background-image:url('${esc(n.image)}')"><span class="tag">${esc(n.cat.toUpperCase())}</span></div><div><span class="kicker">${esc(n.cat)}</span><${heading}>${esc(n.title)}</${heading}>${type!=='grid'?`<p class="excerpt">${esc(n.excerpt)}</p>`:''}<small class="meta">${esc(n.time)} · Redação</small>${type==='grid'?`<small class="source-note">Fonte: ${esc(n.source)}</small>`:''}</div></article>`}
+function renderCategories(){
+ const nav=document.querySelector('.nav-inner');
+ if(!nav)return;
+ const defaults=['Todas',...categories.map(c=>c.name).filter(Boolean)];
+ const unique=[...new Set(defaults)];
+ nav.innerHTML=unique.map(cat=>`<a href="#" data-category="${esc(cat)}" class="${cat==='Todas'?'active':''}">${esc(cat)}</a>`).join('');
+ nav.querySelectorAll('a').forEach(a=>a.onclick=e=>{e.preventDefault();filterCategory(a.dataset.category)});
+}
 function renderSiteSettings(){
  const name=settings.name||'Agora Notícias';
  const parts=name.trim().split(/\s+/);
