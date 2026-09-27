@@ -520,7 +520,7 @@ function reorderLayout(from,to){
  if(!from||!to||from===to)return;
  const l=currentLayout(),a=l.componentOrder.indexOf(from),b=l.componentOrder.indexOf(to);
  if(a<0||b<0)return;
- l.componentOrder.splice(a,1);l.componentOrder.splice(l.componentOrder.indexOf(to)+(a<b?0:1),0,from);
+ l.componentOrder.splice(a,1);let target=l.componentOrder.indexOf(to);if(target<0)return;if(a< b)target=Math.max(0,target);l.componentOrder.splice(target,0,from);
  db.layout=l;markLayoutDirty();renderPortalLayout();
 }
 function toggleLayoutBlock(id){
