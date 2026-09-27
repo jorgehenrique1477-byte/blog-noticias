@@ -419,14 +419,18 @@ function filterCategory(cat){document.querySelectorAll('.nav a').forEach(a=>a.cl
 function normalizeSearch(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()}
 function doSearch(term,move=true){const q=normalizeSearch(term);if(!q){renderHome();return}const items=news.filter(n=>normalizeSearch([n.title,n.excerpt,n.cat,n.source].join(' ')).includes(q));document.querySelectorAll('.nav a').forEach(a=>a.classList.remove('active'));heroArea.innerHTML=`<div class="section-heading"><span class="kicker">Busca</span><h1>Resultados para “${esc(term)}”</h1><p class="excerpt">${items.length} publicação(ões) encontrada(s).</p></div>`;renderList(items);if(move)document.querySelector('.content-grid').scrollIntoView({behavior:'smooth',block:'start'})}
 async function load(render=true){
- const [c,n,s,b,a]=await Promise.all([
+ const [c,n,s,b]=await Promise.all([
    sb.from('categories').select('*').order('name'),
    sb.from('news').select('*').eq('status','published').order('published_at',{ascending:false}),
    sb.from('site_settings').select('*').eq('id',1).maybeSingle(),
-   sb.from('banners').select('*').eq('active',true).order('slot'),
-   sb.from('banner_ads').select('*').eq('active',true).order('sort_order')
+   sb.from('banners').select('*').eq('active',true).order('slot')
  ]);
- if(c.error||n.error||s.error||b.error||a.error)throw(c.error||n.error||s.error||b.error||a.error);
+ if(c.error||n.error||s.error||b.error)throw(c.error||n.error||s.error||b.error);
+ let a=await sb.from('banner_ads').select('*').eq('active',true).order('sort_order');
+ if(a.error){
+   console.warn('Anúncios rotativos indisponíveis; usando os banners principais.',a.error);
+   a={data:[]};
+ }
  categories=c.data||[];
  news=(n.data||[]).map(mapNews);
  settings=s.data||settings;
